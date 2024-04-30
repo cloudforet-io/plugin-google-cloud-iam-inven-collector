@@ -1,0 +1,5 @@
+spaceone-api
+google-api-python-client
+MarkupSafe>=2.0.0rc2
+requests
+beautifulsoup4
