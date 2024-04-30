@@ -48,7 +48,9 @@ class IAMManager(ResourceManager):
             options=options, secret_data=secret_data, schema=schema
         )
         project_resource_map = project_resource_manager.create_project_resource_map()
-        location_count_map = self._create_location_count_map(project_resource_map)
+        org_and_folder_count_map = self._create_org_and_folder_count_map(
+            project_resource_map
+        )
 
         iam_connector = IAMConnector(
             options=options, secret_data=secret_data, schema=schema
@@ -128,17 +130,25 @@ class IAMManager(ResourceManager):
                         )
 
                         if domain.endswith("iam.gserviceaccount.com"):
-                            inherit_info = self._check_inherited(email, project_roles)
+                            org_and_folder_inheritance = (
+                                self._check_org_and_folder_inherited(
+                                    email, project_roles
+                                )
+                            )
+
+                            project_inheritances = self._check_project_inheritances(
+                                email, current_project_id, project_roles
+                            )
 
                             affected_projects_count = 0
                             affected_projects = []
 
-                            if inherit_info:
-                                count_map_matching_key = f"{inherit_info['resourceId']}:{inherit_info['resourceName']}"
-                                affected_projects_count = location_count_map.get(
+                            if org_and_folder_inheritance:
+                                count_map_matching_key = f"{org_and_folder_inheritance['resourceId']}:{org_and_folder_inheritance['resourceName']}"
+                                affected_projects_count = org_and_folder_count_map.get(
                                     count_map_matching_key, {}
                                 ).get("count", 0)
-                                affected_projects = location_count_map.get(
+                                affected_projects = org_and_folder_count_map.get(
                                     count_map_matching_key, {}
                                 ).get("projects_info", [])
 
@@ -153,9 +163,11 @@ class IAMManager(ResourceManager):
                                 )
 
                             service_account["display"] = {
-                                "inheritInfo": inherit_info,
-                                "inheritance": True if inherit_info else False,
-                                "resourceType": inherit_info.get(
+                                "inheritInfo": org_and_folder_inheritance,
+                                "inheritance": True
+                                if org_and_folder_inheritance
+                                else False,
+                                "resourceType": org_and_folder_inheritance.get(
                                     "resourceType", "project"
                                 ),
                                 "serviceAccountKeys": sa_keys,
@@ -168,12 +180,10 @@ class IAMManager(ResourceManager):
                                 ),
                                 "affectedProjectsCount": int(affected_projects_count),
                                 "affectedProjects": affected_projects,
+                                "projectInheritances": project_inheritances,
                             }
 
                             self.set_region_code("global")
-
-                            # print(service_account)
-                            # print()
 
                             cloud_services.append(
                                 make_cloud_service(
@@ -205,6 +215,27 @@ class IAMManager(ResourceManager):
 
         return cloud_services, error_responses
 
+    def _check_project_inheritances(self, email, current_project_id, project_roles):
+        inheritances = []
+        for project_info in self.project_count_map.get(current_project_id, {}).get(
+            "projects_info", []
+        ):
+            display_name = project_info.get("displayName")
+            target_project_id = project_info.get("projectId")
+            roles = self.project_role_binding_map[target_project_id][
+                f"serviceAccount:{email}"
+            ]
+            if roles:
+                inheritances.append(
+                    {
+                        "projectId": target_project_id,
+                        "projectName": display_name,
+                        "roles": self._create_roles(roles, project_roles),
+                    }
+                )
+
+        return inheritances
+
     def _create_project_role_binding_count_map(self, project_resource_map):
         count_map = {}
         for project_id, members in self.project_role_binding_map.items():
@@ -234,7 +265,7 @@ class IAMManager(ResourceManager):
         return count_map
 
     @staticmethod
-    def _create_location_count_map(project_resource_map):
+    def _create_org_and_folder_count_map(project_resource_map):
         count_map = {}
         for project_info in project_resource_map:
             locations = project_info.get("locations", [])
@@ -269,7 +300,7 @@ class IAMManager(ResourceManager):
 
         return member_map
 
-    def _check_inherited(self, email, project_roles):
+    def _check_org_and_folder_inherited(self, email, project_roles):
         matching_key = f"serviceAccount:{email}"
 
         for org_key, org_value in self.organization_map.items():
