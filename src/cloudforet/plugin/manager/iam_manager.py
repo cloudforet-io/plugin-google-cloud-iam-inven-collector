@@ -172,9 +172,7 @@ class IAMManager(ResourceManager):
                                 if org_and_folder_inheritance or trusting_projects
                                 else False,
                                 "resourceType": self._check_resource_type(
-                                    org_and_folder_inheritance.get(
-                                        "resourceType", "PROJECT"
-                                    ),
+                                    org_and_folder_inheritance.get("resourceType"),
                                     trusting_projects,
                                 ),
                                 "serviceAccountKeys": new_sa_keys,
@@ -189,7 +187,6 @@ class IAMManager(ResourceManager):
                                 "affectedProjectsCount": int(affected_projects_count),
                                 "affectedProjects": affected_projects,
                                 "projectInheritances": project_inheritances,
-                                "view": "view",
                             }
 
                             self.set_region_code("global")
@@ -230,6 +227,8 @@ class IAMManager(ResourceManager):
             return "PROJECT"
         elif resource_type == "ORGANIZATION":
             return "ORGANIZATION"
+        elif resource_type == "FOLDER":
+            return "FOLDER"
         elif trusting_projects:
             return "PROJECT"
         else:
@@ -251,6 +250,7 @@ class IAMManager(ResourceManager):
                         "projectId": target_project_id,
                         "projectName": display_name,
                         "roles": self._create_roles(roles, project_roles),
+                        "view": "view",
                     }
                 )
 
@@ -275,7 +275,7 @@ class IAMManager(ResourceManager):
                                 count_map[target_project_id] = {
                                     "count": 1,
                                     "projects_info": [project],
-                                    "resource_type": "project",
+                                    "resource_type": "PROJECT",
                                 }
                             else:
                                 count_map[target_project_id]["count"] += 1
