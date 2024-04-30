@@ -24,6 +24,8 @@ class IAMManager(ResourceManager):
         self.organization_map = {}
         self.organization_role_map = {}
         self.folder_map = {}
+        self.project_role_binding_map = {}
+        self.project_count_map = {}
         self.default_roles = []
 
     def create_cloud_service_type(self):
@@ -36,7 +38,7 @@ class IAMManager(ResourceManager):
             is_major=True,
             service_code="Cloud IAM",
             tags={"spaceone:icon": f"{ASSET_URL}/iam.svg"},
-            labels=["Application Integration"],
+            labels=["Management"],
         )
 
     def create_cloud_service(self, options, secret_data, schema):
@@ -46,7 +48,7 @@ class IAMManager(ResourceManager):
             options=options, secret_data=secret_data, schema=schema
         )
         project_resource_map = project_resource_manager.create_project_resource_map()
-        project_count_map = self._create_count_map(project_resource_map)
+        location_count_map = self._create_location_count_map(project_resource_map)
 
         iam_connector = IAMConnector(
             options=options, secret_data=secret_data, schema=schema
@@ -92,6 +94,17 @@ class IAMManager(ResourceManager):
                         self.folder_map[resource_map_key] = self._change_member_format(
                             folder_role_bindings
                         )
+            project_id = project_info.get("project_id")
+            project_role_binding_map = rm_v3_connector.list_project_iam_policies(
+                project_id
+            )
+            self.project_role_binding_map[project_id] = self._change_member_format(
+                project_role_binding_map
+            )
+            self.project_count_map = self._create_project_role_binding_count_map(
+                project_resource_map
+            )
+
         _LOGGER.debug(
             f"A map containing role-binding information of Organization and Folder is created"
         )
@@ -102,12 +115,6 @@ class IAMManager(ResourceManager):
 
             if service_accounts:
                 project_roles = iam_connector.list_project_roles(current_project_id)
-                project_iam_polices = rm_v3_connector.list_project_iam_policies(
-                    current_project_id
-                )
-                print(project_iam_polices)
-                project_policy_map = self._change_member_format(project_iam_polices)
-
                 for service_account in iam_connector.list_service_accounts(
                     current_project_id
                 ):
@@ -123,17 +130,27 @@ class IAMManager(ResourceManager):
                         if domain.endswith("iam.gserviceaccount.com"):
                             inherit_info = self._check_inherited(email, project_roles)
 
+                            affected_projects_count = 0
+                            affected_projects = []
+
                             if inherit_info:
                                 count_map_matching_key = f"{inherit_info['resourceId']}:{inherit_info['resourceName']}"
-                                affected_projects_count = project_count_map.get(
+                                affected_projects_count = location_count_map.get(
                                     count_map_matching_key, {}
                                 ).get("count", 0)
-                                affected_projects = project_count_map.get(
+                                affected_projects = location_count_map.get(
                                     count_map_matching_key, {}
                                 ).get("projects_info", [])
-                            else:
-                                affected_projects_count = 0
-                                affected_projects = []
+
+                            if trusting_projects := self.project_count_map.get(
+                                current_project_id
+                            ):
+                                affected_projects_count += trusting_projects.get(
+                                    "count", 0
+                                )
+                                affected_projects += trusting_projects.get(
+                                    "projects_info", []
+                                )
 
                             service_account["display"] = {
                                 "inheritInfo": inherit_info,
@@ -144,7 +161,9 @@ class IAMManager(ResourceManager):
                                 "serviceAccountKeys": sa_keys,
                                 "activateKeys": len(sa_keys),
                                 "roles": self._create_roles(
-                                    project_policy_map[f"serviceAccount:{email}"],
+                                    self.project_role_binding_map[current_project_id][
+                                        f"serviceAccount:{email}"
+                                    ],
                                     project_roles,
                                 ),
                                 "affectedProjectsCount": int(affected_projects_count),
@@ -153,8 +172,8 @@ class IAMManager(ResourceManager):
 
                             self.set_region_code("global")
 
-                            print(service_account)
-                            print()
+                            # print(service_account)
+                            # print()
 
                             cloud_services.append(
                                 make_cloud_service(
@@ -162,7 +181,7 @@ class IAMManager(ResourceManager):
                                     cloud_service_type=self.cloud_service_type,
                                     cloud_service_group=self.cloud_service_group,
                                     provider=self.provider,
-                                    account=project_id,
+                                    account=current_project_id,
                                     data=service_account,
                                     region_code="global",
                                     reference={
@@ -186,8 +205,36 @@ class IAMManager(ResourceManager):
 
         return cloud_services, error_responses
 
+    def _create_project_role_binding_count_map(self, project_resource_map):
+        count_map = {}
+        for project_id, members in self.project_role_binding_map.items():
+            for member in members:
+                if (
+                    member.endswith("iam.gserviceaccount.com")
+                    and not member.endswith(f"{project_id}.iam.gserviceaccount.com")
+                    and not member.endswith("system.iam.gserviceaccount.com")
+                ):
+                    prefix, sa_email = member.split("@")
+                    target_project_id, others = sa_email.split(".", 1)
+                    for project_info in project_resource_map:
+                        if project_info.get("project_id") == project_id:
+                            project = project_info.get("data")
+
+                            if target_project_id not in count_map:
+                                count_map[target_project_id] = {
+                                    "count": 1,
+                                    "projects_info": [project],
+                                    "resource_type": "project",
+                                }
+                            else:
+                                count_map[target_project_id]["count"] += 1
+                                count_map[target_project_id]["projects_info"].append(
+                                    project
+                                )
+        return count_map
+
     @staticmethod
-    def _create_count_map(project_resource_map):
+    def _create_location_count_map(project_resource_map):
         count_map = {}
         for project_info in project_resource_map:
             locations = project_info.get("locations", [])
