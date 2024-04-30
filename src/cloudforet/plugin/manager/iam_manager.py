@@ -128,6 +128,10 @@ class IAMManager(ResourceManager):
                         sa_keys = iam_connector.list_service_account_keys(
                             current_project_id, email
                         )
+                        new_sa_keys = []
+                        for sa_key in sa_keys:
+                            sa_key["name"] = sa_key.get("name").split("/")[-1]
+                            new_sa_keys.append(sa_key)
 
                         if domain.endswith("iam.gserviceaccount.com"):
                             org_and_folder_inheritance = (
@@ -165,13 +169,17 @@ class IAMManager(ResourceManager):
                             service_account["display"] = {
                                 "inheritInfo": org_and_folder_inheritance,
                                 "inheritance": True
-                                if org_and_folder_inheritance
+                                if org_and_folder_inheritance or trusting_projects
                                 else False,
-                                "resourceType": org_and_folder_inheritance.get(
-                                    "resourceType", "project"
+                                "resourceType": self._check_resource_type(
+                                    org_and_folder_inheritance.get(
+                                        "resourceType", "PROJECT"
+                                    ),
+                                    trusting_projects,
                                 ),
-                                "serviceAccountKeys": sa_keys,
-                                "activateKeys": len(sa_keys),
+                                "serviceAccountKeys": new_sa_keys,
+                                "activateKeys": len(new_sa_keys),
+                                "hasKeys": True if new_sa_keys else False,
                                 "roles": self._create_roles(
                                     self.project_role_binding_map[current_project_id][
                                         f"serviceAccount:{email}"
@@ -181,6 +189,7 @@ class IAMManager(ResourceManager):
                                 "affectedProjectsCount": int(affected_projects_count),
                                 "affectedProjects": affected_projects,
                                 "projectInheritances": project_inheritances,
+                                "view": "view",
                             }
 
                             self.set_region_code("global")
@@ -214,6 +223,17 @@ class IAMManager(ResourceManager):
                         )
 
         return cloud_services, error_responses
+
+    @staticmethod
+    def _check_resource_type(resource_type, trusting_projects):
+        if resource_type == "PROJECT":
+            return "PROJECT"
+        elif resource_type == "ORGANIZATION":
+            return "ORGANIZATION"
+        elif trusting_projects:
+            return "PROJECT"
+        else:
+            return ""
 
     def _check_project_inheritances(self, email, current_project_id, project_roles):
         inheritances = []
@@ -312,7 +332,7 @@ class IAMManager(ResourceManager):
 
                 return {
                     "resourceId": resource_id,
-                    "resourceType": "organization",
+                    "resourceType": "ORGANIZATION",
                     "resourceName": resource_name,
                     "roles": roles,
                 }
@@ -326,7 +346,7 @@ class IAMManager(ResourceManager):
 
                 return {
                     "resourceId": resource_id,
-                    "resourceType": "folder",
+                    "resourceType": "FOLDER",
                     "resourceName": resource_name,
                     "roles": roles,
                 }
