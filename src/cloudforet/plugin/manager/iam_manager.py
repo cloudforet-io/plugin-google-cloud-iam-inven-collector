@@ -176,7 +176,7 @@ class IAMManager(ResourceManager):
                                     trusting_projects,
                                 ),
                                 "serviceAccountKeys": new_sa_keys,
-                                "activateKeys": len(new_sa_keys),
+                                "activeKeys": len(new_sa_keys),
                                 "hasKeys": True if new_sa_keys else False,
                                 "roles": self._create_roles(
                                     self.project_role_binding_map[current_project_id][
