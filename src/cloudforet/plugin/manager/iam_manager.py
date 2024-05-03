@@ -218,12 +218,10 @@ class IAMManager(ResourceManager):
 
                         if domain.endswith("iam.gserviceaccount.com") and disabled:
                             service_account["display"] = {
-                                {
-                                    "serviceAccountKeys": new_sa_keys,
-                                    "activeKeys": len(new_sa_keys),
-                                    "hasKeys": True if new_sa_keys else False,
-                                    "state": "DISABLED",
-                                }
+                                "serviceAccountKeys": new_sa_keys,
+                                "activeKeys": len(new_sa_keys),
+                                "hasKeys": True if new_sa_keys else False,
+                                "state": "DISABLED",
                             }
                             cloud_services.append(
                                 make_cloud_service(
