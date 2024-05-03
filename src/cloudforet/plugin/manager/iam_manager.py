@@ -241,10 +241,8 @@ class IAMManager(ResourceManager):
         ):
             display_name = project_info.get("displayName")
             target_project_id = project_info.get("projectId")
-            roles = self.project_role_binding_map[target_project_id][
-                f"serviceAccount:{email}"
-            ]
-            if roles:
+            role_binding_map = self.project_role_binding_map[target_project_id]
+            if roles := role_binding_map.get(f"serviceAccount:{email}"):
                 inheritances.append(
                     {
                         "projectId": target_project_id,
