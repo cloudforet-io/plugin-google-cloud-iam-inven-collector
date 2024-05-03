@@ -195,6 +195,7 @@ class IAMManager(ResourceManager):
                                 "affectedProjectsCount": int(affected_projects_count),
                                 "affectedProjects": affected_projects,
                                 "projectInheritances": project_inheritances,
+                                "state": "ACTIVE",
                             }
 
                             self.set_region_code("global")
@@ -221,6 +222,7 @@ class IAMManager(ResourceManager):
                                     "serviceAccountKeys": new_sa_keys,
                                     "activeKeys": len(new_sa_keys),
                                     "hasKeys": True if new_sa_keys else False,
+                                    "state": "DISABLED",
                                 }
                             }
                             cloud_services.append(
