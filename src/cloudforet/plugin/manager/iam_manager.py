@@ -123,6 +123,7 @@ class IAMManager(ResourceManager):
                     try:
                         name = service_account.get("name")
                         email = service_account.get("email")
+                        disabled = service_account.get("disabled")
                         sa_name, domain = email.split("@")
 
                         sa_keys = iam_connector.list_service_account_keys(
@@ -133,7 +134,7 @@ class IAMManager(ResourceManager):
                             sa_key["name"] = sa_key.get("name").split("/")[-1]
                             new_sa_keys.append(sa_key)
 
-                        if domain.endswith("iam.gserviceaccount.com"):
+                        if domain.endswith("iam.gserviceaccount.com") and not disabled:
                             org_and_folder_inheritance = (
                                 self._check_org_and_folder_inherited(
                                     email, project_roles
@@ -166,6 +167,13 @@ class IAMManager(ResourceManager):
                                     "projects_info", []
                                 )
 
+                            roles = self._create_roles(
+                                self.project_role_binding_map[current_project_id].get(
+                                    f"serviceAccount:{email}"
+                                ),
+                                project_roles,
+                            )
+
                             service_account["display"] = {
                                 "inheritInfo": org_and_folder_inheritance,
                                 "inheritance": True
@@ -178,12 +186,7 @@ class IAMManager(ResourceManager):
                                 "serviceAccountKeys": new_sa_keys,
                                 "activeKeys": len(new_sa_keys),
                                 "hasKeys": True if new_sa_keys else False,
-                                "roles": self._create_roles(
-                                    self.project_role_binding_map[current_project_id][
-                                        f"serviceAccount:{email}"
-                                    ],
-                                    project_roles,
-                                ),
+                                "roles": roles,
                                 "affectedProjectsCount": int(affected_projects_count),
                                 "affectedProjects": affected_projects,
                                 "projectInheritances": project_inheritances,
@@ -191,6 +194,30 @@ class IAMManager(ResourceManager):
 
                             self.set_region_code("global")
 
+                            cloud_services.append(
+                                make_cloud_service(
+                                    name=email,
+                                    cloud_service_type=self.cloud_service_type,
+                                    cloud_service_group=self.cloud_service_group,
+                                    provider=self.provider,
+                                    account=current_project_id,
+                                    data=service_account,
+                                    region_code="global",
+                                    reference={
+                                        "resource_id": name,
+                                        "external_link": f"https://console.cloud.google.com/iam-admin/serviceaccounts?project={project_id}",
+                                    },
+                                )
+                            )
+
+                        if domain.endswith("iam.gserviceaccount.com") and disabled:
+                            service_account["display"] = {
+                                {
+                                    "serviceAccountKeys": new_sa_keys,
+                                    "activeKeys": len(new_sa_keys),
+                                    "hasKeys": True if new_sa_keys else False,
+                                }
+                            }
                             cloud_services.append(
                                 make_cloud_service(
                                     name=email,
@@ -301,8 +328,9 @@ class IAMManager(ResourceManager):
                         "resource_type": resource_type,
                     }
                 else:
-                    count_map[resource_map_key]["count"] += 1
-                    count_map[resource_map_key]["projects_info"].append(project)
+                    if project not in count_map[resource_map_key]["projects_info"]:
+                        count_map[resource_map_key]["count"] += 1
+                        count_map[resource_map_key]["projects_info"].append(project)
         return count_map
 
     @staticmethod
