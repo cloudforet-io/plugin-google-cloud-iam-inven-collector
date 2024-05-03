@@ -167,12 +167,17 @@ class IAMManager(ResourceManager):
                                     "projects_info", []
                                 )
 
-                            roles = self._create_roles(
-                                self.project_role_binding_map[current_project_id].get(
+                            roles = []
+                            if current_project_roll_bindings := self.project_role_binding_map.get(
+                                current_project_id
+                            ):
+                                if role_binding_for_current_service_account := current_project_roll_bindings.get(
                                     f"serviceAccount:{email}"
-                                ),
-                                project_roles,
-                            )
+                                ):
+                                    roles = self._create_roles(
+                                        role_binding_for_current_service_account,
+                                        project_roles,
+                                    )
 
                             service_account["display"] = {
                                 "inheritInfo": org_and_folder_inheritance,
