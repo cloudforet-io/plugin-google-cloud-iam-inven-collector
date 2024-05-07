@@ -48,9 +48,11 @@ class IAMManager(ResourceManager):
             options=options, secret_data=secret_data, schema=schema
         )
         project_resource_map = project_resource_manager.create_project_resource_map()
+        _LOGGER.debug(f"Project Resource Map: {project_resource_map}")
         org_and_folder_count_map = self._create_org_and_folder_count_map(
             project_resource_map
         )
+        _LOGGER.debug(f"Org and Folder Count Map: {org_and_folder_count_map}")
 
         iam_connector = IAMConnector(
             options=options, secret_data=secret_data, schema=schema
