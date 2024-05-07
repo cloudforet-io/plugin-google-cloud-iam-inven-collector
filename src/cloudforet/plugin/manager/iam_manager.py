@@ -48,11 +48,9 @@ class IAMManager(ResourceManager):
             options=options, secret_data=secret_data, schema=schema
         )
         project_resource_map = project_resource_manager.create_project_resource_map()
-        _LOGGER.debug(f"Project Resource Map: {project_resource_map}")
         org_and_folder_count_map = self._create_org_and_folder_count_map(
             project_resource_map
         )
-        _LOGGER.debug(f"Org and Folder Count Map: {org_and_folder_count_map}")
 
         iam_connector = IAMConnector(
             options=options, secret_data=secret_data, schema=schema
@@ -74,8 +72,8 @@ class IAMManager(ResourceManager):
                     resource_type = location.get("resource_type")
                     resource_map_key = f"{resource_id}:{resource_name}"
                     if (
-                        resource_type == "organization"
-                        and resource_id not in self.check_organization_or_folder
+                            resource_type == "organization"
+                            and resource_id not in self.check_organization_or_folder
                     ):
                         self.check_organization_or_folder.append(resource_id)
                         self.organization_role_map = (
@@ -88,8 +86,8 @@ class IAMManager(ResourceManager):
                             resource_map_key
                         ] = self._change_member_format(org_role_bindings)
                     elif (
-                        resource_type == "folder"
-                        and resource_id not in self.check_organization_or_folder
+                            resource_type == "folder"
+                            and resource_id not in self.check_organization_or_folder
                     ):
                         self.check_organization_or_folder.append(resource_id)
                         folder_role_bindings = rm_v3_connector.list_folder_iam_policies(
@@ -98,6 +96,7 @@ class IAMManager(ResourceManager):
                         self.folder_map[resource_map_key] = self._change_member_format(
                             folder_role_bindings
                         )
+
             project_id = project_info.get("project_id")
             project_role_binding_map = rm_v3_connector.list_project_iam_policies(
                 project_id
@@ -105,9 +104,10 @@ class IAMManager(ResourceManager):
             self.project_role_binding_map[project_id] = self._change_member_format(
                 project_role_binding_map
             )
-            self.project_count_map = self._create_project_role_binding_count_map(
-                project_resource_map
-            )
+
+        self.project_count_map = self._create_project_role_binding_count_map(
+            project_resource_map
+        )
 
         _LOGGER.debug(
             f"A map containing role-binding information of Organization and Folder is created"
@@ -120,7 +120,7 @@ class IAMManager(ResourceManager):
             if service_accounts:
                 project_roles = iam_connector.list_project_roles(current_project_id)
                 for service_account in iam_connector.list_service_accounts(
-                    current_project_id
+                        current_project_id
                 ):
                     try:
                         name = service_account.get("name")
@@ -160,7 +160,7 @@ class IAMManager(ResourceManager):
                                 ).get("projects_info", [])
 
                             if trusting_projects := self.project_count_map.get(
-                                current_project_id
+                                    current_project_id
                             ):
                                 affected_projects_count += trusting_projects.get(
                                     "count", 0
@@ -171,10 +171,10 @@ class IAMManager(ResourceManager):
 
                             roles = []
                             if current_project_roll_bindings := self.project_role_binding_map.get(
-                                current_project_id
+                                    current_project_id
                             ):
                                 if role_binding_for_current_service_account := current_project_roll_bindings.get(
-                                    f"serviceAccount:{email}"
+                                        f"serviceAccount:{email}"
                                 ):
                                     roles = self._create_roles(
                                         role_binding_for_current_service_account,
@@ -271,7 +271,7 @@ class IAMManager(ResourceManager):
     def _check_project_inheritances(self, email, current_project_id, project_roles):
         inheritances = []
         for project_info in self.project_count_map.get(current_project_id, {}).get(
-            "projects_info", []
+                "projects_info", []
         ):
             display_name = project_info.get("displayName")
             target_project_id = project_info.get("projectId")
@@ -293,9 +293,9 @@ class IAMManager(ResourceManager):
         for project_id, members in self.project_role_binding_map.items():
             for member in members:
                 if (
-                    member.endswith("iam.gserviceaccount.com")
-                    and not member.endswith(f"{project_id}.iam.gserviceaccount.com")
-                    and not member.endswith("system.iam.gserviceaccount.com")
+                        member.endswith("iam.gserviceaccount.com")
+                        and not member.endswith(f"{project_id}.iam.gserviceaccount.com")
+                        and not member.endswith("system.iam.gserviceaccount.com")
                 ):
                     prefix, sa_email = member.split("@")
                     target_project_id, others = sa_email.split(".", 1)
