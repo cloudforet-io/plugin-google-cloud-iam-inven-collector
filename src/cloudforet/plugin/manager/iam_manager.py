@@ -108,6 +108,7 @@ class IAMManager(ResourceManager):
         self.project_count_map = self._create_project_role_binding_count_map(
             project_resource_map
         )
+        _LOGGER.debug(f"Project count map: {self.project_count_map}")
 
         _LOGGER.debug(
             f"A map containing role-binding information of Organization and Folder is created"
@@ -119,9 +120,7 @@ class IAMManager(ResourceManager):
 
             if service_accounts:
                 project_roles = iam_connector.list_project_roles(current_project_id)
-                for service_account in iam_connector.list_service_accounts(
-                        current_project_id
-                ):
+                for service_account in service_accounts:
                     try:
                         name = service_account.get("name")
                         email = service_account.get("email")
@@ -310,10 +309,14 @@ class IAMManager(ResourceManager):
                                     "resource_type": "PROJECT",
                                 }
                             else:
-                                count_map[target_project_id]["count"] += 1
-                                count_map[target_project_id]["projects_info"].append(
-                                    project
-                                )
+                                if (
+                                        project
+                                        not in count_map[target_project_id]["projects_info"]
+                                ):
+                                    count_map[target_project_id]["count"] += 1
+                                    count_map[target_project_id][
+                                        "projects_info"
+                                    ].append(project)
         return count_map
 
     @staticmethod
