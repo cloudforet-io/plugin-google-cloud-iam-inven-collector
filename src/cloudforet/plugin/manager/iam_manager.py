@@ -291,32 +291,32 @@ class IAMManager(ResourceManager):
         count_map = {}
         for project_id, members in self.project_role_binding_map.items():
             for member in members:
-                if (
-                        member.endswith("iam.gserviceaccount.com")
-                        and not member.endswith(f"{project_id}.iam.gserviceaccount.com")
-                        and not member.endswith("system.iam.gserviceaccount.com")
-                ):
-                    prefix, sa_email = member.split("@")
-                    target_project_id, others = sa_email.split(".", 1)
-                    for project_info in project_resource_map:
-                        if project_info.get("project_id") == project_id:
-                            project = project_info.get("data")
+                # if (
+                #         member.endswith("iam.gserviceaccount.com")
+                #         and not member.endswith(f"{project_id}.iam.gserviceaccount.com")
+                #         and not member.endswith("system.iam.gserviceaccount.com")
+                # ):
+                prefix, sa_email = member.split("@")
+                target_project_id, others = sa_email.split(".", 1)
+                for project_info in project_resource_map:
+                    if project_info.get("project_id") == project_id:
+                        project = project_info.get("data")
 
-                            if target_project_id not in count_map:
-                                count_map[target_project_id] = {
-                                    "count": 1,
-                                    "projects_info": [project],
-                                    "resource_type": "PROJECT",
-                                }
-                            else:
-                                if (
-                                        project
-                                        not in count_map[target_project_id]["projects_info"]
-                                ):
-                                    count_map[target_project_id]["count"] += 1
-                                    count_map[target_project_id][
-                                        "projects_info"
-                                    ].append(project)
+                        if target_project_id not in count_map:
+                            count_map[target_project_id] = {
+                                "count": 1,
+                                "projects_info": [project],
+                                "resource_type": "PROJECT",
+                            }
+                        else:
+                            if (
+                                    project
+                                    not in count_map[target_project_id]["projects_info"]
+                            ):
+                                count_map[target_project_id]["count"] += 1
+                                count_map[target_project_id][
+                                    "projects_info"
+                                ].append(project)
         return count_map
 
     @staticmethod
