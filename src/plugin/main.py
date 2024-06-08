@@ -22,17 +22,8 @@ def collector_collect(params: dict) -> Generator[dict, None, None]:
     secret_data = params["secret_data"]
     schema = params.get("schema")
     project_id = secret_data.get("project_id")
-    include_org = params.get("include_org", False)
-    include_folder = params.get("include_folder", False)
 
     _check_secret_data(secret_data)
-
-    if inherited_project_id := options.get("inherited_project_id"):
-        if inherited_project_id == project_id:
-            include_org = True
-            include_folder = True
-    # else:
-    #     raise ERROR_REQUIRED_PARAMETER(key="options.inherited_project_id")
 
     start_time = time.time()
     _LOGGER.debug(
@@ -57,17 +48,6 @@ def _create_init_metadata() -> dict:
                 "inventory.Region",
                 "inventory.ErrorResource",
             ],
-            "options_schema": {
-                "required": ["project_id"],
-                "order": ["project_id"],
-                "type": "object",
-                "properties": {
-                    "inherited_project_id": {
-                        "title": "Inherited Project ID",
-                        "type": "string",
-                    },
-                },
-            },
         }
     }
 
