@@ -2,6 +2,7 @@ import logging
 from typing import Generator
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.iam_connector import IAMConnector
+from plugin.connector.resource_manager_v1_connector import ResourceManagerV1Connector
 from plugin.connector.resource_manager_v3_connector import ResourceManagerV3Connector
 from plugin.manager.base import ResourceManager
 
@@ -22,18 +23,25 @@ class ServiceAccountManager(ResourceManager):
         self.labels = []
         self.metadata_path = "metadata/service_account.yaml"
         self.iam_connector = None
+        self.rm_v1_connector = None
         self.rm_v3_connector = None
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
+        self.rm_v1_connector = ResourceManagerV1Connector(options, secret_data, schema)
 
-        service_accounts = self.iam_connector.list_service_accounts()
-        if service_accounts:
-            for service_account in service_accounts:
-                yield self.make_cloud_service_info(service_account)
+        # Get all projects
+        projects = self.rm_v1_connector.list_projects()
+        for project in projects:
+            print(project)
+            yield from self.collect_service_accounts(project["projectId"])
 
-    def make_cloud_service_info(self, service_account):
-        project_id = self.iam_connector.project_id
+    def collect_service_accounts(self, project_id: str) -> Generator[dict, None, None]:
+        service_accounts = self.iam_connector.list_service_accounts(project_id)
+        for service_account in service_accounts:
+            yield self.make_cloud_service_info(service_account, project_id)
+
+    def make_cloud_service_info(self, service_account: dict, project_id: str) -> dict:
         name = service_account.get("displayName")
         email = service_account.get("email")
         resource_id = service_account.get("name")
@@ -45,7 +53,7 @@ class ServiceAccountManager(ResourceManager):
             service_account["status"] = "ENABLED"
 
         # Get service account keys
-        keys = self.iam_connector.list_service_account_keys(email)
+        keys = self.iam_connector.list_service_account_keys(email, project_id)
         for key in keys:
             key["name"] = key.get("name").split("/")[-1]
 
@@ -63,7 +71,7 @@ class ServiceAccountManager(ResourceManager):
             reference={
                 "resource_id": resource_id,
                 "external_link": f"https://console.cloud.google.com/iam-admin/serviceaccounts/details/{unique_id}?"
-                                 f"authuser=2&project={project_id}",
+                                 f"project={project_id}"
             },
             # data_format="grpc",
         )
