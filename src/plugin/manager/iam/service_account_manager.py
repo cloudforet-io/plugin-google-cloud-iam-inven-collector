@@ -65,5 +65,5 @@ class ServiceAccountManager(ResourceManager):
                 "external_link": f"https://console.cloud.google.com/iam-admin/serviceaccounts/details/{unique_id}?"
                                  f"authuser=2&project={project_id}",
             },
-            data_format="grpc",
+            # data_format="grpc",
         )
