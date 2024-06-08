@@ -1,7 +1,6 @@
 import logging
-import itertools
 
-from cloudforet.plugin.connector.base import GoogleCloudConnector
+from plugin.connector import GoogleCloudConnector
 
 __all__ = ["ResourceManagerV3Connector"]
 
@@ -12,11 +11,8 @@ class ResourceManagerV3Connector(GoogleCloudConnector):
     google_client_service = "cloudresourcemanager"
     version = "v3"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.secret_data = kwargs.get("secret_data", {})
-
-    def get_project(self, project_id):
+    def get_project(self, project_id: str = None):
+        project_id = project_id or self.project_id
         result = self.client.projects().get(name=f"projects/{project_id}").execute()
         return result
 
@@ -35,7 +31,8 @@ class ResourceManagerV3Connector(GoogleCloudConnector):
         results = self.client.folders().list(parent=parent).execute()
         return results.get("folders", [])
 
-    def list_project_iam_policies(self, project_id):
+    def list_project_iam_policies(self, project_id: str = None):
+        project_id = project_id or self.project_id
         resource = f"projects/{project_id}"
         result = self.client.projects().getIamPolicy(resource=resource).execute()
         return result.get("bindings", [])
