@@ -1,5 +1,5 @@
-# Cloud Service Type Icon
-ASSET_URL = "https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud"
+# Icon URL Prefix for Cloud Service Type
+ICON_URL_PREFIX = "https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud"
 
 # Region Information
 REGION_INFO = {

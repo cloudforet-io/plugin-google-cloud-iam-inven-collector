@@ -4,7 +4,7 @@ import time
 from spaceone.core.manager import BaseManager
 from spaceone.inventory.plugin.collector.lib import *
 
-from cloudforet.plugin.config.global_conf import REGION_INFO
+from cloudforet.plugin.conf.global_conf import REGION_INFO
 
 _LOGGER = logging.getLogger("spaceone")
 

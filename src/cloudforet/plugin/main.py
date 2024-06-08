@@ -43,6 +43,16 @@ def _create_init_metadata():
                 "inventory.Region",
                 "inventory.ErrorResource",
             ],
-            "options_schema": {},
+            "options_schema": {
+                "required": ["project_id"],
+                "order": ["project_id"],
+                "type": "object",
+                "properties": {
+                    "project_id": {
+                        "title": "Inherited Project ID",
+                        "type": "string",
+                    },
+                },
+            },
         }
     }
