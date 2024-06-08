@@ -1,6 +1,6 @@
 import logging
 from spaceone.inventory.plugin.collector.lib import *
-from cloudforet.plugin.config.global_conf import ASSET_URL
+from cloudforet.plugin.conf.global_conf import ICON_URL_PREFIX
 from cloudforet.plugin.connector.iam_connector import IAMConnector
 from cloudforet.plugin.connector.resource_manager_v3_connector import (
     ResourceManagerV3Connector,
@@ -20,6 +20,7 @@ class IAMManager(ResourceManager):
         self.cloud_service_group = "IAM"
         self.cloud_service_type = "ServiceAccount"
         self.metadata_path = "plugin/metadata/service_account.yaml"
+        self.icon = f"{ICON_URL_PREFIX}/iam.svg"
         self.check_organization_or_folder = []
         self.organization_map = {}
         self.organization_role_map = {}
@@ -37,8 +38,8 @@ class IAMManager(ResourceManager):
             is_primary=True,
             is_major=True,
             service_code="Cloud IAM",
-            tags={"spaceone:icon": f"{ASSET_URL}/iam.svg"},
-            labels=["Management"],
+            tags={"spaceone:icon": self.icon},
+            labels=["Security"],
         )
 
     def create_cloud_service(self, options, secret_data, schema):
