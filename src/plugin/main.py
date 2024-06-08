@@ -31,8 +31,8 @@ def collector_collect(params: dict) -> Generator[dict, None, None]:
         if inherited_project_id == project_id:
             include_org = True
             include_folder = True
-    else:
-        raise ERROR_REQUIRED_PARAMETER(key="options.inherited_project_id")
+    # else:
+    #     raise ERROR_REQUIRED_PARAMETER(key="options.inherited_project_id")
 
     start_time = time.time()
     _LOGGER.debug(

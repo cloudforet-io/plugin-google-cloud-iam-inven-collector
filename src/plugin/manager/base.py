@@ -38,10 +38,10 @@ class ResourceManager(BaseManager):
 
     def collect_resources(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         try:
-            _LOGGER.debug(f"[{self.__repr__()}] Collect cloud service type: {self.service}")
+            _LOGGER.debug(f"[{self.__repr__()}.collect_resources] Collect cloud service type: {self.service}")
             yield self.get_cloud_service_type()
 
-            _LOGGER.debug(f"[{self.__repr__()}] Collect cloud services: {self.service}")
+            _LOGGER.debug(f"[{self.__repr__()}.collect_resources] Collect cloud services: {self.service}")
             response_iterator = self.collect_cloud_services(options, secret_data, schema)
             for response in response_iterator:
                 try:
@@ -58,7 +58,7 @@ class ResourceManager(BaseManager):
                         ],
                     )
                 except Exception as e:
-                    _LOGGER.error(f"[{self.__repr__()}] Error: {str(e)}")
+                    _LOGGER.error(f"[{self.__repr__()}.collect_resources] Error: {str(e)}", exc_info=True)
                     yield make_error_response(
                         error=e,
                         provider=self.provider,
@@ -67,7 +67,7 @@ class ResourceManager(BaseManager):
                     )
 
         except Exception as e:
-            _LOGGER.error(f"[{self.__repr__()}] Error: {str(e)}")
+            _LOGGER.error(f"[{self.__repr__()}.collect_resources] Error: {str(e)}", exc_info=True)
             yield make_error_response(
                 error=e,
                 provider=self.provider,
