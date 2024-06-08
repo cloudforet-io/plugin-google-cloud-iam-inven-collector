@@ -1,4 +1,5 @@
 import logging
+from dateutil.parser import parse
 from typing import Generator
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.iam_connector import IAMConnector
@@ -33,7 +34,6 @@ class ServiceAccountManager(ResourceManager):
         # Get all projects
         projects = self.rm_v1_connector.list_projects()
         for project in projects:
-            print(project)
             yield from self.collect_service_accounts(project["projectId"])
 
     def collect_service_accounts(self, project_id: str) -> Generator[dict, None, None]:
@@ -53,10 +53,7 @@ class ServiceAccountManager(ResourceManager):
             service_account["status"] = "ENABLED"
 
         # Get service account keys
-        keys = self.iam_connector.list_service_account_keys(email, project_id)
-        for key in keys:
-            key["name"] = key.get("name").split("/")[-1]
-
+        keys = self.get_service_account_keys(email, project_id)
         service_account["keys"] = keys
         service_account["keyCount"] = len(keys)
 
@@ -73,5 +70,19 @@ class ServiceAccountManager(ResourceManager):
                 "external_link": f"https://console.cloud.google.com/iam-admin/serviceaccounts/details/{unique_id}?"
                                  f"project={project_id}"
             },
-            # data_format="grpc",
+            data_format="grpc",
         )
+
+    def get_service_account_keys(self, email: str, project_id: str) -> list:
+        keys = self.iam_connector.list_service_account_keys(email, project_id)
+        for key in keys:
+            key["name"] = key.get("name").split("/")[-1]
+            key["status"] = "ACTIVE"
+            creation_time = key.get("validAfterTime")
+            expiration_time = key.get("validBeforeTime")
+
+            if expiration_time:
+                if parse(expiration_time) < parse(creation_time):
+                    key["status"] = "EXPIRED"
+
+        return keys
