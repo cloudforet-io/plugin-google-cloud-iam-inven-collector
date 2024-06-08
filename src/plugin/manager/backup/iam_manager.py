@@ -1,12 +1,12 @@
 import logging
 from spaceone.inventory.plugin.collector.lib import *
-from cloudforet.plugin.conf.global_conf import ICON_URL_PREFIX
-from cloudforet.plugin.connector.iam_connector import IAMConnector
-from cloudforet.plugin.connector.resource_manager_v3_connector import (
+from plugin.conf.global_conf import ICON_URL_PREFIX
+from plugin.connector.iam_connector import IAMConnector
+from plugin.connector.resource_manager_v3_connector import (
     ResourceManagerV3Connector,
 )
-from cloudforet.plugin.manager import ResourceManager
-from cloudforet.plugin.manager.resource_manager import ProjectResourceManager
+from plugin.manager import ResourceManager
+from plugin.manager.backup.resource_manager import ProjectResourceManager
 
 _LOGGER = logging.getLogger("spaceone")
 

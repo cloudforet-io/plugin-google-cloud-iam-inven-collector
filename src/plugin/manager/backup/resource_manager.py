@@ -4,10 +4,10 @@ import logging
 from collections import deque
 
 from spaceone.core.manager import BaseManager
-from cloudforet.plugin.connector.resource_manager_v1_connector import (
+from plugin.connector.resource_manager_v1_connector import (
     ResourceManagerV1Connector,
 )
-from cloudforet.plugin.connector.resource_manager_v3_connector import (
+from plugin.connector.resource_manager_v3_connector import (
     ResourceManagerV3Connector,
 )
 

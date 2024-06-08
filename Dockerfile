@@ -22,4 +22,4 @@ RUN python3 setup.py install && \
 EXPOSE ${SPACEONE_PORT}
 
 ENTRYPOINT ["spaceone"]
-CMD ["run", "plugin-server", "cloudforet.plugin"]
+CMD ["run", "plugin-server", "plugin"]

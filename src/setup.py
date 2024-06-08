@@ -34,6 +34,6 @@ setup(
         "spaceone-api",
         "google-api-python-client",
     ],
-    package_data={"cloudforet": ["plugin/metadata/*.yaml"]},
+    package_data={"plugin": ["metadata/*.yaml"]},
     zip_safe=False,
 )
