@@ -3,13 +3,23 @@ search:
     - Type: data.type
       type: enum
       enums:
-        - "PREDEFINED": blue.500
+        - "PREDEFINED": gray.500
           name: Predefined
-        - "CUSTOM": coral.500
-          name: Custom
+        - "ORGANIZATION": blue.500
+          name: Organization
+        - "PROJECT": coral.500
+          name: Project
+    - Status: data.status
+      type: enum
+      enums:
+        - "ENABLED": green.500
+          name: Enabled
+        - "DISABLED": red.500
+          name: Disabled
     - Role ID: data.name
     - Permission Count: data.permissionCount
       data_type: integer
+    - Google Project ID: account
     - Role launch stage: data.stage
     - ETAG: data.etag
 
@@ -20,14 +30,26 @@ table:
     - Type: data.type
       type: enum
       enums:
-        - "PREDEFINED": blue.500
+        - "PREDEFINED": gray.500
           name: Predefined
-        - "CUSTOM": coral.500
-          name: Custom
+        - "ORGANIZATION": blue.500
+          name: Organization
+        - "PROJECT": coral.500
+          name: Project
+    - Status: data.status
+      type: enum
+      enums:
+        - "ENABLED": green.500
+          name: Enabled
+          type: state
+        - "DISABLED": red.500
+          name: Disabled
+          type: state
     - Role ID: data.name
       is_optional: true
     - Permission Count: data.permissionCount
       data_type: integer
+    - Google Project ID: account
     - Role launch stage: data.stage
       is_optional: true
     - ETAG: data.etag
@@ -42,14 +64,25 @@ tabs.0:
     - Type: data.type
       type: enum
       enums:
-       - "PREDEFINED": blue.500
+       - "PREDEFINED": gray.500
          name: Predefined
-       - "CUSTOM": coral.500
-         name: Custom
+       - "ORGANIZATION": blue.500
+         name: Organization
+       - "PROJECT": coral.500
+         name: Project
+    - Status: data.status
+      type: enum
+      enums:
+        - "ENABLED": green.500
+          name: Enabled
+          type: state
+        - "DISABLED": red.500
+          name: Disabled
+          type: state
     - Description: data.description
+    - Google Project ID: account
     - Role launch stage: data.stage
     - ETAG: data.etag
-
 
 tabs.1:
   name: Permissions
