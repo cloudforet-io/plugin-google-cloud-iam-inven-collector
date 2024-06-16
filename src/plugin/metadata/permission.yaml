@@ -1,0 +1,85 @@
+search:
+  fields:
+    - Type: data.type
+      type: enum
+      enums:
+        - domain: yellow.500
+          label: Domain
+        - serviceAccount: blue.500
+          label: Service Account
+        - user: coral.500
+          label: User
+    - Role ID: data.bindings.role.id
+    - Role Name: data.bindings.role.name
+    - Role Type: data.bindings.role.roleType
+      type: enum
+      enums:
+        - PREDEFINED: gray.500
+          label: Predefined
+        - ORGANIZATION: blue.500
+          label: Organization
+        - PROJECT: coral.500
+          label: Project
+    - Target ID: data.bindings.target.id
+    - Target Name: data.bindings.target.name
+    - Target Type: data.bindings.target.type
+      type: enum
+      enums:
+        - ORGANIZATION: blue.500
+          label: Organization
+        - FOLDER: yellow.500
+          label: Folder
+        - PROJECT: coral.500
+          label: Project
+
+table:
+  sort:
+    key: data.type
+  fields:
+    - Type: data.type
+      type: enum
+      enums:
+        - domain: yellow.500
+          label: Domain
+        - serviceAccount: blue.500
+          label: Service Account
+        - user: coral.500
+          label: User
+    - Role Binding Count: data.bindingCount
+    - Inherited: data.inherited
+      data_type: boolean
+    - Inheritance: data.inheritance
+      type: badge
+
+tabs.0:
+  name: Role Bindings
+  type: query-search-table
+  root_path: data.bindings
+  fields:
+    - Role ID: role.id
+      reference:
+        reference_key: reference.resource_id
+        resource_type: inventory.CloudService
+    - Role Name: role.name
+    - Role Type: role.roleType
+      type: enum
+      enums:
+        - PREDEFINED: gray.500
+          label: Predefined
+        - ORGANIZATION: blue.500
+          label: Organization
+        - PROJECT: coral.500
+          label: Project
+    - Permission Count: role.permissionCount
+      data_type: integer
+    - Target ID: target.id
+    - Target Name: target.name
+    - Target Type: target.type
+      type: enum
+      enums:
+        - ORGANIZATION: blue.500
+          label: Organization
+        - FOLDER: yellow.500
+          label: Folder
+        - PROJECT: coral.500
+          label: Project

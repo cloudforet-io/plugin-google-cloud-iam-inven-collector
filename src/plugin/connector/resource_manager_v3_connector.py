@@ -35,16 +35,21 @@ class ResourceManagerV3Connector(GoogleCloudConnector):
         results = self.client.folders().list(parent=parent).execute()
         return results.get("folders", [])
 
-    def list_project_iam_policies(self, project_id: str = None):
+    def get_project_iam_policies(self, project_id: str = None):
         project_id = project_id or self.project_id
         resource = f"projects/{project_id}"
         result = self.client.projects().getIamPolicy(resource=resource).execute()
         return result.get("bindings", [])
 
-    def list_folder_iam_policies(self, resource):
+    def get_ancestor_iam_policies(self, project_id: str):
+        resource = f"projects/{project_id}"
+        result = self.client.projects().getAncestorsIamPolicy(resource=resource).execute()
+        return result.get("bindings", [])
+
+    def get_folder_iam_policies(self, resource):
         result = self.client.folders().getIamPolicy(resource=resource).execute()
         return result.get("bindings", [])
 
-    def list_organization_iam_policies(self, resource):
+    def get_organization_iam_policies(self, resource):
         result = self.client.organizations().getIamPolicy(resource=resource).execute()
         return result.get("bindings", [])
