@@ -1,0 +1,57 @@
+search:
+  fields:
+    - Type: data.type
+      type: enum
+      enums:
+        - "PREDEFINED": blue.500
+          name: Predefined
+        - "CUSTOM": coral.500
+          name: Custom
+    - Role ID: data.name
+    - Permission Count: data.permissionCount
+      data_type: integer
+    - Role launch stage: data.stage
+    - ETAG: data.etag
+
+table:
+  sort:
+    key: name
+  fields:
+    - Type: data.type
+      type: enum
+      enums:
+        - "PREDEFINED": blue.500
+          name: Predefined
+        - "CUSTOM": coral.500
+          name: Custom
+    - Role ID: data.name
+      is_optional: true
+    - Permission Count: data.permissionCount
+      data_type: integer
+    - Role launch stage: data.stage
+      is_optional: true
+    - ETAG: data.etag
+      is_optional: true
+
+tabs.0:
+  name: Details
+  type: item
+  fields:
+    - Role ID: data.name
+    - Name: name
+    - Type: data.type
+      type: enum
+      enums:
+       - "PREDEFINED": blue.500
+         name: Predefined
+       - "CUSTOM": coral.500
+         name: Custom
+    - Description: data.description
+    - Role launch stage: data.stage
+    - ETAG: data.etag
+
+
+tabs.1:
+  name: Permissions
+  type: raw
+  root_path: data.includedPermissions

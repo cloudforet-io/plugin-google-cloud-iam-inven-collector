@@ -1,4 +1,5 @@
 import logging
+from spaceone.core import cache
 from plugin.connector import GoogleCloudConnector
 
 __all__ = ["IAMConnector"]
@@ -9,6 +10,9 @@ _LOGGER = logging.getLogger("spaceone")
 class IAMConnector(GoogleCloudConnector):
     google_client_service = "iam"
     version = "v1"
+
+    def get_service_account(self, name: str):
+        return self.client.projects().serviceAccounts().get(name=name).execute()
 
     def list_service_accounts(self, project_id: str = None) -> list:
         project_id = project_id or self.project_id
@@ -58,6 +62,9 @@ class IAMConnector(GoogleCloudConnector):
 
         return permissions
 
+    def get_project_role(self, name: str):
+        return self.client.projects().roles().get(name=name).execute()
+
     def list_project_roles(self, project_id: str = None):
         parent = f"projects/{project_id}"
         roles = []
@@ -79,6 +86,9 @@ class IAMConnector(GoogleCloudConnector):
 
         return roles
 
+    def get_organization_role(self, name: str):
+        return self.client.organizations().roles().get(name=name).execute()
+
     def list_organization_roles(self, resource):
         roles = []
         request = self.client.organizations().roles().list(parent=resource)
@@ -97,6 +107,10 @@ class IAMConnector(GoogleCloudConnector):
                 break
 
         return roles
+
+    @cache.cacheable(key="plugin:connector:role:{name}", alias="local")
+    def get_role(self, name: str):
+        return self.client.roles().get(name=name).execute()
 
     def list_roles(self):
         roles = []

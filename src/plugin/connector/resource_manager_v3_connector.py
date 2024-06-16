@@ -19,6 +19,10 @@ class ResourceManagerV3Connector(GoogleCloudConnector):
     def get_organization(self, organization_id):
         return self.client.organizations().get(name=organization_id).execute()
 
+    def search_organizations(self):
+        results = self.client.organizations().search().execute()
+        return results.get("organizations", [])
+
     def search_folders(self):
         results = self.client.folders().search().execute()
         return results.get("folders", [])
