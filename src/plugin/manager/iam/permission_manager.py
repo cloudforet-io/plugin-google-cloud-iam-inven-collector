@@ -26,11 +26,15 @@ class PermissionManager(ResourceManager):
         self.rm_v1_connector = None
         self.rm_v3_connector = None
         self.permission_info = {}
+        self.service_account_info = {}
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v1_connector = ResourceManagerV1Connector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
+
+        # Get service account info
+        self.get_service_account_info()
 
         # Get organization permissions
         organizations = self.rm_v3_connector.search_organizations()
@@ -51,7 +55,9 @@ class PermissionManager(ResourceManager):
 
     def make_permission_info(self) -> Generator[dict, None, None]:
         for member, permission_info in self.permission_info.items():
-            name = permission_info["memberId"]
+            name = permission_info["memberName"]
+            project_id = permission_info.get("projectId")
+
             permission_info["bindingCount"] = len(permission_info["bindings"])
 
             yield make_cloud_service(
@@ -59,6 +65,7 @@ class PermissionManager(ResourceManager):
                 cloud_service_type=self.cloud_service_type,
                 cloud_service_group=self.cloud_service_group,
                 provider=self.provider,
+                account=project_id,
                 data=permission_info,
                 region_code="global",
                 reference={
@@ -139,10 +146,18 @@ class PermissionManager(ResourceManager):
                 self.permission_info[member] = {
                     "type": member_type,
                     "memberId": member_id,
+                    "memberName": member_id,
                     "bindings": [],
                     "inherited": False,
                     "inheritance": [],
                 }
+
+                if member_type == "serviceAccount":
+                    if member_id in self.service_account_info:
+                        self.permission_info[member]["memberName"] = self.service_account_info[member_id].get("name")
+                        self.permission_info[member]["projectId"] = self.service_account_info[member_id].get("projectId")
+                    else:
+                        self.permission_info[member]["type"] = "googleManagedServiceAccount"
 
             self.permission_info[member]["bindings"].append(binding_info)
 
@@ -150,3 +165,15 @@ class PermissionManager(ResourceManager):
                 self.permission_info[member]["inherited"] = True
                 if target_name not in self.permission_info[member]["inheritance"]:
                     self.permission_info[member]["inheritance"].append(target_name)
+
+    def get_service_account_info(self):
+        # Get all projects
+        projects = self.rm_v1_connector.list_projects()
+        for project in projects:
+            project_id = project["projectId"]
+            service_accounts = self.iam_connector.list_service_accounts(project_id)
+            for service_account in service_accounts:
+                self.service_account_info[service_account["email"]] = {
+                    "projectId": project_id,
+                    "name": service_account.get("displayName"),
+                }
