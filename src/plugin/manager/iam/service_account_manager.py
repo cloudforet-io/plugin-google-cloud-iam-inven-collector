@@ -70,7 +70,7 @@ class ServiceAccountManager(ResourceManager):
                 "external_link": f"https://console.cloud.google.com/iam-admin/serviceaccounts/details/{unique_id}?"
                                  f"project={project_id}"
             },
-            data_format="grpc",
+            # data_format="grpc",
         )
 
     def get_service_account_keys(self, email: str, project_id: str) -> list:
