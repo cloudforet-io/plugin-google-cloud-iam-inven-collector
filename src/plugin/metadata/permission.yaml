@@ -31,7 +31,7 @@ search:
       enums:
         - ORGANIZATION: blue.500
           label: Organization
-        - FOLDER: yellow.500
+        - FOLDER: gray.500
           label: Folder
         - PROJECT: coral.500
           label: Project
@@ -87,7 +87,7 @@ tabs.0:
       enums:
         - ORGANIZATION: blue.500
           name: Organization
-        - FOLDER: yellow.500
+        - FOLDER: gray.500
           name: Folder
         - PROJECT: coral.500
           name: Project
