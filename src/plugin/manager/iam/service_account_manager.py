@@ -4,7 +4,6 @@ from typing import Generator
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.iam_connector import IAMConnector
 from plugin.connector.resource_manager_v1_connector import ResourceManagerV1Connector
-from plugin.connector.resource_manager_v3_connector import ResourceManagerV3Connector
 from plugin.manager.base import ResourceManager
 
 _LOGGER = logging.getLogger("spaceone")
