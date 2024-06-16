@@ -40,24 +40,28 @@ class RoleManager(ResourceManager):
         # get Organization roles
         organizations = self.rm_v3_connector.search_organizations()
         for organization in organizations:
-            yield from self.collect_organization_roles(organization["name"], default_project_id)
+            yield from self.collect_organization_roles(organization, default_project_id)
 
         # Get all projects
         projects = self.rm_v1_connector.list_projects()
         for project in projects:
             yield from self.collect_project_roles(project["projectId"])
 
-    def collect_organization_roles(self, organization_id: str, project_id: str) -> Generator[dict, None, None]:
+    def collect_organization_roles(self, organization: dict, default_project_id: str) -> Generator[dict, None, None]:
+        organization_id = organization.get("name")
+        organization_name = organization.get("displayName")
+        location = f"organizations/{organization_name}"
         roles = self.iam_connector.list_organization_roles(organization_id)
         for role in roles:
-            yield self.make_role_info(role, project_id, "ORGANIZATION")
+            yield self.make_role_info(role, default_project_id, "ORGANIZATION", location)
 
     def collect_project_roles(self, project_id: str) -> Generator[dict, None, None]:
         roles = self.iam_connector.list_project_roles(project_id)
+        location = f"projects/{project_id}"
         for role in roles:
-            yield self.make_role_info(role, project_id, "PROJECT")
+            yield self.make_role_info(role, project_id, "PROJECT", location)
 
-    def make_role_info(self, role: dict, project_id: str, role_type: str) -> dict:
+    def make_role_info(self, role: dict, project_id: str, role_type: str, location: str = None) -> dict:
         role["type"] = role_type
         name = role.get("title")
         role_id = role.get("name")
@@ -72,13 +76,10 @@ class RoleManager(ResourceManager):
         # Get role details
         if role_type == "PROJECT":
             role_details = self.iam_connector.get_project_role(role_id)
-            account = project_id
         elif role_type == "ORGANIZATION":
             role_details = self.iam_connector.get_organization_role(role_id)
-            account = None
         else:
             role_details = self.iam_connector.get_role(role_id)
-            account = None
 
         role["includedPermissions"] = role_details.get("includedPermissions", [])
         role["permissionCount"] = len(role["includedPermissions"])
@@ -88,7 +89,7 @@ class RoleManager(ResourceManager):
             cloud_service_type=self.cloud_service_type,
             cloud_service_group=self.cloud_service_group,
             provider=self.provider,
-            account=account,
+            account=location,
             data=role,
             region_code="global",
             reference={
