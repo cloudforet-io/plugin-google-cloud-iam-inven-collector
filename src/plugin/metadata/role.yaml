@@ -3,56 +3,53 @@ search:
     - Type: data.type
       type: enum
       enums:
-        - "PREDEFINED": gray.500
-          name: Predefined
-        - "ORGANIZATION": blue.500
-          name: Organization
-        - "PROJECT": coral.500
-          name: Project
+        - PREDEFINED: gray.500
+          label: Predefined
+        - ORGANIZATION: blue.500
+          label: Organization
+        - PROJECT: coral.500
+          label: Project
     - Status: data.status
       type: enum
       enums:
-        - "ENABLED": green.500
-          name: Enabled
-        - "DISABLED": red.500
-          name: Disabled
+        - ENABLED: green.500
+          label: Enabled
+        - DISABLED: red.500
+          label: Disabled
     - Role ID: data.name
     - Permission Count: data.permissionCount
       data_type: integer
     - Google Project ID: account
-    - Role launch stage: data.stage
-    - ETAG: data.etag
+    - Role Launch Stage: data.stage
 
 table:
   sort:
     key: name
   fields:
-    - Type: data.type
-      type: enum
-      enums:
-        - "PREDEFINED": gray.500
-          name: Predefined
-        - "ORGANIZATION": blue.500
-          name: Organization
-        - "PROJECT": coral.500
-          name: Project
     - Status: data.status
       type: enum
       enums:
-        - "ENABLED": green.500
+        - ENABLED: green.500
           name: Enabled
           type: state
-        - "DISABLED": red.500
+        - DISABLED: red.500
           name: Disabled
           type: state
     - Role ID: data.name
       is_optional: true
     - Permission Count: data.permissionCount
       data_type: integer
+    - Type: data.type
+      type: enum
+      enums:
+        - PREDEFINED: gray.500
+          name: Predefined
+        - ORGANIZATION: blue.500
+          name: Organization
+        - PROJECT: coral.500
+          name: Project
     - Google Project ID: account
-    - Role launch stage: data.stage
-      is_optional: true
-    - ETAG: data.etag
+    - Role Launch Stage: data.stage
       is_optional: true
 
 tabs.0:
@@ -61,28 +58,27 @@ tabs.0:
   fields:
     - Role ID: data.name
     - Name: name
-    - Type: data.type
-      type: enum
-      enums:
-       - "PREDEFINED": gray.500
-         name: Predefined
-       - "ORGANIZATION": blue.500
-         name: Organization
-       - "PROJECT": coral.500
-         name: Project
     - Status: data.status
       type: enum
       enums:
-        - "ENABLED": green.500
+        - ENABLED: green.500
           name: Enabled
           type: state
-        - "DISABLED": red.500
+        - DISABLED: red.500
           name: Disabled
           type: state
     - Description: data.description
+    - Type: data.type
+      type: enum
+      enums:
+        - PREDEFINED: gray.500
+          name: Predefined
+        - ORGANIZATION: blue.500
+          name: Organization
+        - PROJECT: coral.500
+          name: Project
     - Google Project ID: account
-    - Role launch stage: data.stage
-    - ETAG: data.etag
+    - Role Launch Stage: data.stage
 
 tabs.1:
   name: Permissions

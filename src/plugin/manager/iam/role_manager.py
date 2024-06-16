@@ -18,7 +18,7 @@ class RoleManager(ResourceManager):
         self.cloud_service_group = "IAM"
         self.cloud_service_type = "Role"
         self.service_code = None
-        self.is_primary = True
+        self.is_primary = False
         self.icon = "iam.svg"
         self.labels = []
         self.metadata_path = "metadata/role.yaml"
@@ -35,7 +35,6 @@ class RoleManager(ResourceManager):
         # Get all roles
         roles = self.iam_connector.list_roles()
         for role in roles:
-            role["type"] = "PREDEFINED"
             yield self.make_role_info(role, default_project_id, "PREDEFINED")
 
         # get Organization roles
