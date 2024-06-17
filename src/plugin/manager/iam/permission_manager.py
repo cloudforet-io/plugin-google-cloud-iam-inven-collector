@@ -17,7 +17,7 @@ class PermissionManager(ResourceManager):
         self.cloud_service_group = "IAM"
         self.cloud_service_type = "Permission"
         self.service_code = None
-        self.is_primary = True
+        self.is_primary = False
         self.icon = "iam.svg"
         self.labels = []
         self.metadata_path = "metadata/permission.yaml"
