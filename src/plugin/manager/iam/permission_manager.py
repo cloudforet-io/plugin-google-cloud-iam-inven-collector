@@ -121,6 +121,9 @@ class PermissionManager(ResourceManager):
         target_name = target.get("name")
 
         role_id = binding.get("role")
+        if "_withcond_" in role_id:
+            role_id, cond_id = role_id.split("_withcond_")
+
         if role_id.startswith("organizations/"):
             role_details = self.iam_connector.get_organization_role(role_id)
             role_type = "ORGANIZATION"

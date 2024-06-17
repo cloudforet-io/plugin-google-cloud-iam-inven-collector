@@ -1,14 +1,5 @@
 search:
   fields:
-    - Type: data.type
-      type: enum
-      enums:
-        - PREDEFINED: gray.500
-          label: Predefined
-        - ORGANIZATION: blue.500
-          label: Organization
-        - PROJECT: coral.500
-          label: Project
     - Status: data.status
       type: enum
       enums:
@@ -17,14 +8,21 @@ search:
         - DISABLED: red.500
           label: Disabled
     - Role ID: data.name
+    - Type: data.type
+      type: enum
+      enums:
+        - PREDEFINED: gray.500
+          label: Predefined
+        - CUSTOM: blue.500
+          label: Custom
+    - Location: account
     - Permission Count: data.permissionCount
       data_type: integer
-    - Google Project ID: account
     - Role Launch Stage: data.stage
 
 table:
   sort:
-    key: name
+    key: data.type
   fields:
     - Status: data.status
       type: enum
@@ -44,11 +42,9 @@ table:
       enums:
         - PREDEFINED: gray.500
           name: Predefined
-        - ORGANIZATION: blue.500
-          name: Organization
-        - PROJECT: coral.500
-          name: Project
-    - Google Project ID: account
+        - CUSTOM: blue.500
+          name: Custom
+    - Location: account
     - Role Launch Stage: data.stage
       is_optional: true
 
@@ -73,11 +69,9 @@ tabs.0:
       enums:
         - PREDEFINED: gray.500
           name: Predefined
-        - ORGANIZATION: blue.500
-          name: Organization
-        - PROJECT: coral.500
-          name: Project
-    - Google Project ID: account
+        - CUSTOM: blue.500
+          name: Custom
+    - Location: account
     - Role Launch Stage: data.stage
 
 tabs.1:
