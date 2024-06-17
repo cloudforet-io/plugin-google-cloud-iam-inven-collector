@@ -2,7 +2,6 @@ import logging
 from typing import Generator
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.iam_connector import IAMConnector
-from plugin.connector.resource_manager_v1_connector import ResourceManagerV1Connector
 from plugin.connector.resource_manager_v3_connector import ResourceManagerV3Connector
 from plugin.manager.base import ResourceManager
 
@@ -23,7 +22,6 @@ class PermissionManager(ResourceManager):
         self.labels = []
         self.metadata_path = "metadata/permission.yaml"
         self.iam_connector = None
-        self.rm_v1_connector = None
         self.rm_v3_connector = None
         self.permission_info = {}
         self.service_account_info = {}
@@ -34,7 +32,6 @@ class PermissionManager(ResourceManager):
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
-        self.rm_v1_connector = ResourceManagerV1Connector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
 
         # Get service account info
@@ -51,7 +48,7 @@ class PermissionManager(ResourceManager):
             self.collect_folder_permissions(folder)
 
         # Get all projects
-        projects = self.rm_v1_connector.list_projects()
+        projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             self.collect_project_permissions(project)
 
@@ -122,7 +119,6 @@ class PermissionManager(ResourceManager):
             self.parse_binding_info(binding, target)
 
     def parse_binding_info(self, binding: dict, target: dict) -> None:
-        print(binding)
         binding_info = {
             "target": target,
         }
@@ -170,6 +166,8 @@ class PermissionManager(ResourceManager):
                         self.permission_info[member]["projectId"] = self.service_account_info[member_id].get("projectId")
                     else:
                         self.permission_info[member]["type"] = "googleManagedServiceAccount"
+                        if target_type == "PROJECT":
+                            self.permission_info[member]["projectId"] = target["id"]
 
             self.permission_info[member]["bindings"].append(binding_info)
 
@@ -180,7 +178,7 @@ class PermissionManager(ResourceManager):
 
     def get_service_account_info(self):
         # Get all projects
-        projects = self.rm_v1_connector.list_projects()
+        projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             project_id = project["projectId"]
             service_accounts = self.iam_connector.list_service_accounts(project_id)

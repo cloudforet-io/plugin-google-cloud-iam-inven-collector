@@ -25,8 +25,6 @@ def collector_collect(params: dict) -> Generator[dict, None, None]:
 
     _check_secret_data(secret_data)
 
-    from spaceone.core import utils
-    print("secret_data: ", utils.dump_json(secret_data))
     start_time = time.time()
     _LOGGER.debug(
         f"[collector_collect] Start Collecting Cloud Resources (project_id: {project_id})"
