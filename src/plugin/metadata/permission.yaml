@@ -15,6 +15,10 @@ search:
         - user: coral.500
           label: User
     - Google Project ID: account
+    - Role Binding Count: data.bindingCount
+      data_type: integer
+    - Inherited: data.inherited
+      data_type: boolean
     - Role ID: data.bindings.role.id
     - Role Name: data.bindings.role.name
     - Role Type: data.bindings.role.roleType
@@ -22,10 +26,8 @@ search:
       enums:
         - PREDEFINED: gray.500
           label: Predefined
-        - ORGANIZATION: blue.500
-          label: Organization
-        - PROJECT: coral.500
-          label: Project
+        - CUSTOM: blue.500
+          label: Custom
     - Target ID: data.bindings.target.id
     - Target Name: data.bindings.target.name
     - Target Type: data.bindings.target.type
@@ -68,6 +70,27 @@ tabs.0:
   name: Role Bindings
   type: query-search-table
   root_path: data.bindings
+  unwind: data.bindings
+  search:
+    - key: data.bindings.role.name
+      name: Role Name
+    - key: data.bindings.role.roleType
+      name: Role Type
+      enums:
+        - PREDEFINED
+        - CUSTOM
+    - key: data.bindings.role.id
+      name: Role ID
+    - key: data.bindings.target.type
+      name: Target Type
+      enums:
+          - ORGANIZATION
+          - FOLDER
+          - PROJECT
+    - key: data.bindings.target.id
+      name: Target ID
+    - key: data.bindings.target.name
+      name: Target Name
   fields:
     - Role Name: role.name
     - Role Type: role.roleType
@@ -75,16 +98,24 @@ tabs.0:
       enums:
         - PREDEFINED: gray.500
           name: Predefined
-        - ORGANIZATION: blue.500
-          name: Organization
-        - PROJECT: coral.500
-          name: Project
+        - CUSTOM: blue.500
+          name: Custom
     - Role ID: role.id
       reference:
         reference_key: reference.resource_id
         resource_type: inventory.CloudService
     - Permission Count: role.permissionCount
       data_type: integer
+    - Condition: condition.title
+      type: more
+      options:
+        sub_key: condition
+        layout:
+          name: Condition Details
+          type: popup
+          options:
+            layout:
+              type: "raw"
     - Target Type: target.type
       type: enum
       enums:

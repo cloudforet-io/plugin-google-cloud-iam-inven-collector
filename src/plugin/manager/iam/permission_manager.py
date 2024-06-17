@@ -17,7 +17,7 @@ class PermissionManager(ResourceManager):
         self.cloud_service_group = "IAM"
         self.cloud_service_type = "Permission"
         self.service_code = None
-        self.is_primary = True
+        self.is_primary = False
         self.icon = "iam.svg"
         self.labels = []
         self.metadata_path = "metadata/permission.yaml"
@@ -126,15 +126,13 @@ class PermissionManager(ResourceManager):
         target_name = target.get("name")
 
         role_id = binding.get("role")
-        if "_withcond_" in role_id:
-            role_id, cond_id = role_id.split("_withcond_")
 
         if role_id.startswith("organizations/"):
             role_details = self.iam_connector.get_organization_role(role_id)
-            role_type = "ORGANIZATION"
+            role_type = "CUSTOM"
         elif role_id.startswith("projects/"):
             role_details = self.iam_connector.get_project_role(role_id)
-            role_type = "PROJECT"
+            role_type = "CUSTOM"
         else:
             role_details = self.iam_connector.get_role(role_id)
             role_type = "PREDEFINED"
@@ -147,8 +145,13 @@ class PermissionManager(ResourceManager):
             "permissionCount": len(role_details.get("includedPermissions", [])),
         }
 
+        binding_info["condition"] = binding.get("condition", {})
+
         for member in binding.get("members", []):
             member_type, member_id = member.split(":", 1)
+
+            if member_type == "deleted":
+                continue
 
             if member not in self.permission_info:
                 self.permission_info[member] = {
