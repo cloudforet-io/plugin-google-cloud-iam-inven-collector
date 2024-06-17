@@ -42,14 +42,14 @@ class PermissionManager(ResourceManager):
             self.collect_organization_permissions(organization)
 
         # Get folder permissions
-        folders = self.rm_v3_connector.search_folders()
-        for folder in folders:
-            self.collect_folder_permissions(folder)
+        # folders = self.rm_v3_connector.search_folders()
+        # for folder in folders:
+        #     self.collect_folder_permissions(folder)
 
         # Get all projects
-        projects = self.rm_v1_connector.list_projects()
-        for project in projects:
-            self.collect_project_permissions(project)
+        # projects = self.rm_v1_connector.list_projects()
+        # for project in projects:
+        #     self.collect_project_permissions(project)
 
         yield from self.make_permission_info()
 
@@ -121,6 +121,9 @@ class PermissionManager(ResourceManager):
         target_name = target.get("name")
 
         role_id = binding.get("role")
+        if "_withcond_" in role_id:
+            role_id, cond_id = role_id.split("_withcond_")
+
         if role_id.startswith("organizations/"):
             role_details = self.iam_connector.get_organization_role(role_id)
             role_type = "ORGANIZATION"
