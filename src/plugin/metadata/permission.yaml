@@ -6,6 +6,8 @@ search:
       enums:
         - domain: yellow.500
           label: Domain
+        - group: green.500
+          label: Group
         - serviceAccount: blue.500
           label: Service Account
         - googleManagedServiceAccount: gray.500
@@ -47,6 +49,8 @@ table:
       enums:
         - domain: yellow.500
           name: Domain
+        - group: green.500
+          label: Group
         - serviceAccount: blue.500
           name: Service Account
         - googleManagedServiceAccount: gray.500
@@ -81,7 +85,6 @@ tabs.0:
         resource_type: inventory.CloudService
     - Permission Count: role.permissionCount
       data_type: integer
-    - Target Name: target.name
     - Target Type: target.type
       type: enum
       enums:
@@ -91,4 +94,4 @@ tabs.0:
           name: Folder
         - PROJECT: coral.500
           name: Project
-    - Target ID: target.id
+    - Target Location: target.location

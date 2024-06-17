@@ -27,6 +27,10 @@ class PermissionManager(ResourceManager):
         self.rm_v3_connector = None
         self.permission_info = {}
         self.service_account_info = {}
+        self.location_info = {
+            "FOLDER": {},
+            "PROJECT": {},
+        }
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
@@ -81,6 +85,7 @@ class PermissionManager(ResourceManager):
             "type": "ORGANIZATION",
             "id": organization_id,
             "name": organization_name,
+            "location": organization_name
         }
         bindings = self.rm_v3_connector.get_organization_iam_policies(organization_id)
         for binding in bindings:
@@ -94,7 +99,9 @@ class PermissionManager(ResourceManager):
             "type": "FOLDER",
             "id": folder_id,
             "name": folder_name,
+            "location": self.get_folder_location(folder_id),
         }
+
         bindings = self.rm_v3_connector.get_folder_iam_policies(folder_id)
         for binding in bindings:
             self.parse_binding_info(binding, target)
@@ -107,6 +114,7 @@ class PermissionManager(ResourceManager):
             "type": "PROJECT",
             "id": project_id,
             "name": project_name,
+            "location": self.get_project_location(project_id),
         }
 
         bindings = self.rm_v3_connector.get_project_iam_policies(project_id)
@@ -114,6 +122,7 @@ class PermissionManager(ResourceManager):
             self.parse_binding_info(binding, target)
 
     def parse_binding_info(self, binding: dict, target: dict) -> None:
+        print(binding)
         binding_info = {
             "target": target,
         }
@@ -180,3 +189,35 @@ class PermissionManager(ResourceManager):
                     "projectId": project_id,
                     "name": service_account.get("displayName"),
                 }
+
+    def get_folder_location(self, folder_id: str) -> str:
+        if folder_id in self.location_info["FOLDER"]:
+            return self.location_info["FOLDER"][folder_id]
+
+        folder = self.rm_v3_connector.get_folder(folder_id)
+        parent = folder.get("parent")
+        if parent.startswith("organizations/"):
+            organization = self.rm_v3_connector.get_organization(parent)
+            location = f"{organization.get('displayName')} > {folder.get('displayName')}"
+        else:
+            parent_location = self.get_folder_location(parent)
+            location = f"{parent_location} > {folder.get('displayName')}"
+
+        self.location_info["FOLDER"][folder_id] = location
+        return location
+
+    def get_project_location(self, project_id: str) -> str:
+        if project_id in self.location_info["PROJECT"]:
+            return self.location_info["PROJECT"][project_id]
+
+        project = self.rm_v3_connector.get_project(project_id)
+        parent = project.get("parent")
+        if parent.startswith("organizations/"):
+            organization = self.rm_v3_connector.get_organization(parent)
+            location = f"{organization.get('displayName')} > {project.get('displayName')}"
+        else:
+            parent_location = self.get_folder_location(parent)
+            location = f"{parent_location} > {project.get('displayName')}"
+
+        self.location_info["PROJECT"][project_id] = location
+        return location

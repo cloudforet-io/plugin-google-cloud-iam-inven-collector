@@ -62,7 +62,6 @@ class RoleManager(ResourceManager):
             yield self.make_role_info(role, project_id, "PROJECT", location)
 
     def make_role_info(self, role: dict, project_id: str, role_type: str, location: str = None) -> dict:
-        role["type"] = role_type
         name = role.get("title")
         role_id = role.get("name")
         role_url = role_id.replace("/", "<")
@@ -76,10 +75,13 @@ class RoleManager(ResourceManager):
         # Get role details
         if role_type == "PROJECT":
             role_details = self.iam_connector.get_project_role(role_id)
+            role["type"] = "CUSTOM"
         elif role_type == "ORGANIZATION":
             role_details = self.iam_connector.get_organization_role(role_id)
+            role["type"] = "CUSTOM"
         else:
             role_details = self.iam_connector.get_role(role_id)
+            role["type"] = role_type
 
         role["includedPermissions"] = role_details.get("includedPermissions", [])
         role["permissionCount"] = len(role["includedPermissions"])

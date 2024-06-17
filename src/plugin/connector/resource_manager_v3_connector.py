@@ -16,6 +16,9 @@ class ResourceManagerV3Connector(GoogleCloudConnector):
         result = self.client.projects().get(name=f"projects/{project_id}").execute()
         return result
 
+    def get_folder(self, folder_id):
+        return self.client.folders().get(name=folder_id).execute()
+
     def get_organization(self, organization_id):
         return self.client.organizations().get(name=organization_id).execute()
 
