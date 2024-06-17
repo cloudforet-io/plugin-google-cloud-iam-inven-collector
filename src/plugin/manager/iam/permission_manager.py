@@ -126,8 +126,6 @@ class PermissionManager(ResourceManager):
         target_name = target.get("name")
 
         role_id = binding.get("role")
-        if "_withcond_" in role_id:
-            role_id, cond_id = role_id.split("_withcond_")
 
         if role_id.startswith("organizations/"):
             role_details = self.iam_connector.get_organization_role(role_id)
@@ -147,8 +145,13 @@ class PermissionManager(ResourceManager):
             "permissionCount": len(role_details.get("includedPermissions", [])),
         }
 
+        binding_info["condition"] = binding.get("condition", {})
+
         for member in binding.get("members", []):
             member_type, member_id = member.split(":", 1)
+
+            if member_type == "deleted":
+                continue
 
             if member not in self.permission_info:
                 self.permission_info[member] = {
