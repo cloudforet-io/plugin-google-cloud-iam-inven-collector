@@ -22,10 +22,8 @@ search:
       enums:
         - PREDEFINED: gray.500
           label: Predefined
-        - ORGANIZATION: blue.500
-          label: Organization
-        - PROJECT: coral.500
-          label: Project
+        - CUSTOM: blue.500
+          label: Custom
     - Target ID: data.bindings.target.id
     - Target Name: data.bindings.target.name
     - Target Type: data.bindings.target.type
@@ -75,10 +73,8 @@ tabs.0:
       enums:
         - PREDEFINED: gray.500
           name: Predefined
-        - ORGANIZATION: blue.500
-          name: Organization
-        - PROJECT: coral.500
-          name: Project
+        - CUSTOM: blue.500
+          name: Custom
     - Role ID: role.id
       reference:
         reference_key: reference.resource_id

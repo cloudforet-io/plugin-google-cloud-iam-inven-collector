@@ -131,10 +131,10 @@ class PermissionManager(ResourceManager):
 
         if role_id.startswith("organizations/"):
             role_details = self.iam_connector.get_organization_role(role_id)
-            role_type = "ORGANIZATION"
+            role_type = "CUSTOM"
         elif role_id.startswith("projects/"):
             role_details = self.iam_connector.get_project_role(role_id)
-            role_type = "PROJECT"
+            role_type = "CUSTOM"
         else:
             role_details = self.iam_connector.get_role(role_id)
             role_type = "PREDEFINED"
