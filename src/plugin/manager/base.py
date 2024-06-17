@@ -92,9 +92,6 @@ class ResourceManager(BaseManager):
             labels=self.labels,
         )
 
-        # metadata = utils.load_yaml(cloud_service_type["json_metadata"])
-        # print(utils.dump_json(metadata, 4))
-
         return make_response(
             resource_type="inventory.CloudServiceType",
             cloud_service_type=cloud_service_type,

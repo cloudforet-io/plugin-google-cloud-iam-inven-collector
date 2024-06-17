@@ -2,7 +2,6 @@ import logging
 from typing import Generator
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.iam_connector import IAMConnector
-from plugin.connector.resource_manager_v1_connector import ResourceManagerV1Connector
 from plugin.connector.resource_manager_v3_connector import ResourceManagerV3Connector
 from plugin.manager.base import ResourceManager
 
@@ -23,12 +22,10 @@ class RoleManager(ResourceManager):
         self.labels = []
         self.metadata_path = "metadata/role.yaml"
         self.iam_connector = None
-        self.rm_v1_connector = None
         self.rm_v3_connector = None
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
-        self.rm_v1_connector = ResourceManagerV1Connector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
         default_project_id = secret_data.get("project_id")
 
@@ -43,7 +40,7 @@ class RoleManager(ResourceManager):
             yield from self.collect_organization_roles(organization, default_project_id)
 
         # Get all projects
-        projects = self.rm_v1_connector.list_projects()
+        projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             yield from self.collect_project_roles(project["projectId"])
 
