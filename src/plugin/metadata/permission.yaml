@@ -109,7 +109,7 @@ tabs.0:
     - Condition: condition.title
       type: more
       options:
-        sub_key: condition
+        sub_key: data.bindings.condition
         layout:
           name: Condition Details
           type: popup
