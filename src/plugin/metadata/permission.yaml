@@ -77,16 +77,21 @@ tabs.0:
     - key: data.bindings.role.roleType
       name: Role Type
       enums:
-        - PREDEFINED
-        - CUSTOM
+        PREDEFINED:
+          label: Predefined
+        CUSTOM:
+          label: Custom
     - key: data.bindings.role.id
       name: Role ID
     - key: data.bindings.target.type
       name: Target Type
       enums:
-          - ORGANIZATION
-          - FOLDER
-          - PROJECT
+        ORGANIZATION:
+          label: Organization
+        FOLDER:
+          label: Folder
+        PROJECT:
+          label: Project
     - key: data.bindings.target.id
       name: Target ID
     - key: data.bindings.target.name
