@@ -72,7 +72,7 @@ class PermissionManager(ResourceManager):
                 reference={
                     "resource_id": member,
                 },
-                data_format="grpc",
+                # data_format="grpc",
             )
 
     def collect_organization_permissions(self, organization: dict) -> None:

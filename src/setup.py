@@ -34,6 +34,11 @@ setup(
         "spaceone-api",
         "google-api-python-client",
     ],
-    package_data={"plugin": ["metadata/*.yaml"]},
+    package_data={
+        "plugin": [
+            "metadata/*.yaml",
+            "metrics/**/**/*.yaml"
+        ]
+    },
     zip_safe=False,
 )

@@ -11,7 +11,7 @@ from spaceone.inventory.plugin.collector.lib import *
 
 from plugin.conf.global_conf import REGION_INFO, ICON_URL_PREFIX
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("spaceone")
 CURRENT_DIR = os.path.dirname(__file__)
 METRIC_DIR = os.path.join(CURRENT_DIR, "../metrics/")
 
@@ -38,10 +38,16 @@ class ResourceManager(BaseManager):
 
     def collect_resources(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         try:
-            _LOGGER.debug(f"[{self.__repr__()}.collect_resources] Collect cloud service type: {self.service}")
+            _LOGGER.debug(f"[{self.__repr__()}] Collect cloud service type: "
+                          f"{self.cloud_service_group} > {self.cloud_service_type}")
             yield self.get_cloud_service_type()
 
-            _LOGGER.debug(f"[{self.__repr__()}.collect_resources] Collect cloud services: {self.service}")
+            _LOGGER.debug(f"[{self.__repr__()}] Collect metrics: "
+                          f"{self.cloud_service_group} > {self.cloud_service_type}")
+            yield from self.collect_metrics()
+
+            _LOGGER.debug(f"[{self.__repr__()}] Collect cloud services: "
+                          f"{self.cloud_service_group} > {self.cloud_service_type}")
             response_iterator = self.collect_cloud_services(options, secret_data, schema)
             for response in response_iterator:
                 try:
@@ -58,7 +64,7 @@ class ResourceManager(BaseManager):
                         ],
                     )
                 except Exception as e:
-                    _LOGGER.error(f"[{self.__repr__()}.collect_resources] Error: {str(e)}", exc_info=True)
+                    _LOGGER.error(f"[{self.__repr__()}] Error: {str(e)}", exc_info=True)
                     yield make_error_response(
                         error=e,
                         provider=self.provider,
@@ -67,7 +73,7 @@ class ResourceManager(BaseManager):
                     )
 
         except Exception as e:
-            _LOGGER.error(f"[{self.__repr__()}.collect_resources] Error: {str(e)}", exc_info=True)
+            _LOGGER.error(f"[{self.__repr__()}] Error: {str(e)}", exc_info=True)
             yield make_error_response(
                 error=e,
                 provider=self.provider,
@@ -111,12 +117,11 @@ class ResourceManager(BaseManager):
                 resource_type="inventory.Region",
             )
 
-    @classmethod
-    def collect_metrics(cls, service: str) -> dict:
-        for dirname in os.listdir(os.path.join(METRIC_DIR, service)):
-            for filename in os.listdir(os.path.join(METRIC_DIR, service, dirname)):
+    def collect_metrics(self) -> dict:
+        for dirname in os.listdir(os.path.join(METRIC_DIR, self.cloud_service_group)):
+            for filename in os.listdir(os.path.join(METRIC_DIR, self.cloud_service_group, dirname)):
                 if filename.endswith(".yaml"):
-                    file_path = os.path.join(METRIC_DIR, service, dirname, filename)
+                    file_path = os.path.join(METRIC_DIR, self.cloud_service_group, dirname, filename)
                     info = utils.load_yaml_from_file(file_path)
                     if filename == "namespace.yaml":
                         yield make_response(

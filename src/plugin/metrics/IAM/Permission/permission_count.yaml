@@ -1,0 +1,22 @@
+---
+metric_id: metric-google-cloud-iam-permission-count
+name: Permission Count
+metric_type: GAUGE
+resource_type: inventory.CloudService:google_cloud.IAM.Permission
+query_options:
+  group_by:
+    - key: data.type
+      name: Permission Type
+      default: true
+    - key: account
+      name: Google Project ID
+    - key: data.status
+      name: Status
+    - key: data.inherited
+      name: Inherited
+  fields:
+    value:
+      operator: count
+unit: Count
+namespace_id: ns-google-cloud-iam-permission
+version: '1.0'

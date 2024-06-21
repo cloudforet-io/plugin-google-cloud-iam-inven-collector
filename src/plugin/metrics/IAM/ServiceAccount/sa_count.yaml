@@ -1,0 +1,18 @@
+---
+metric_id: metric-google-cloud-iam-sa-count
+name: Service Account Count
+metric_type: GAUGE
+resource_type: inventory.CloudService:google_cloud.IAM.ServiceAccount
+query_options:
+  group_by:
+    - key: data.projectId
+      name: Google Project ID
+      default: true
+    - key: data.status
+      name: Status
+  fields:
+    value:
+      operator: count
+unit: Count
+namespace_id: ns-google-cloud-iam-sa
+version: '1.0'

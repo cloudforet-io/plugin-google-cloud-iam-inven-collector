@@ -4,7 +4,7 @@ from plugin.connector import GoogleCloudConnector
 
 __all__ = ["ResourceManagerV3Connector"]
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("spaceone")
 
 
 class ResourceManagerV3Connector(GoogleCloudConnector):
