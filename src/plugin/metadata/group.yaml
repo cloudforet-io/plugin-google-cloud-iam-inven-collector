@@ -1,80 +1,51 @@
 search:
   fields:
-    - Status: data.status
-      type: enum
-      enums:
-        - ENABLED: green.500
-          label: Enabled
-        - DISABLED: red.500
-          label: Disabled
-    - Role ID: data.name
-    - Type: data.type
-      type: enum
-      enums:
-        - PREDEFINED: gray.500
-          label: Predefined
-        - CUSTOM: blue.500
-          label: Custom
-    - Location: account
-    - Permission Count: data.permissionCount
+    - Group Email: data.groupKey.id
+    - Member Count: data.memberCount
       data_type: integer
-    - Role Launch Stage: data.stage
+    - Location: account
 
 table:
   sort:
-    key: data.type
+    key: name
   fields:
-    - Status: data.status
-      type: enum
-      enums:
-        - ENABLED: green.500
-          name: Enabled
-          type: state
-        - DISABLED: red.500
-          name: Disabled
-          type: state
-    - Role ID: data.name
-      is_optional: true
-    - Permission Count: data.permissionCount
+    - Group Email: data.groupKey.id
+    - Member Count: data.memberCount
       data_type: integer
-    - Type: data.type
-      type: enum
-      enums:
-        - PREDEFINED: gray.500
-          name: Predefined
-        - CUSTOM: blue.500
-          name: Custom
     - Location: account
-    - Role Launch Stage: data.stage
-      is_optional: true
 
 tabs.0:
-  name: Details
-  type: item
+  name: Members
+  type: query-search-table
+  root_path: data.members
+  unwind: data.members
+  search:
+    - key: data.members.preferredMemberKey.id
+      name: Member
+    - key: data.members.type
+      name: Type
+    - key: data.members.role
+      name: Role in Group
+      enums:
+        OWNER:
+          label: Owner
+        MANAGER:
+          label: Manager
+        MEMBER:
+          label: Member
   fields:
-    - Role ID: data.name
-    - Name: name
-    - Status: data.status
+    - Member: data.members.preferredMemberKey.id
+    - Type: data.members.type
+    - Role in Group: data.members.role
       type: enum
       enums:
-        - ENABLED: green.500
-          name: Enabled
-          type: state
-        - DISABLED: red.500
-          name: Disabled
-          type: state
-    - Description: data.description
-    - Type: data.type
-      type: enum
-      enums:
-        - PREDEFINED: gray.500
-          name: Predefined
-        - CUSTOM: blue.500
-          name: Custom
-    - Location: account
-    - Role Launch Stage: data.stage
-
-tabs.1:
-  name: Permissions
-  type: raw
-  root_path: data.includedPermissions
+        - OWNER: blue.500
+          name: Owner
+        - Manager: coral.500
+          name: Manager
+        - Member: gray.500
+          name: Member
+    - Join Date: data.members.createTime
+      type: datetime
+      options:
+        source_type: iso8601
