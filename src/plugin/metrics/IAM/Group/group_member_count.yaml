@@ -1,0 +1,26 @@
+---
+metric_id: metric-google-cloud-iam-group-member-count
+name: Group Member Count
+metric_type: GAUGE
+resource_type: inventory.CloudService:google_cloud.IAM.Group
+query_options:
+  unwind:
+    path: data.members
+  group_by:
+    - key: name
+      name: Group Name
+      default: true
+    - key: data.groupKey.id
+      name: Group Email
+    - key: data.members.preferredMemberKey.id
+      name: Member
+    - key: data.members.type
+      name: Member Type
+    - key: data.members.role
+      name: Role
+  fields:
+    value:
+      operator: count
+unit: Count
+namespace_id: ns-google-cloud-iam-group
+version: '1.0'
