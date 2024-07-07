@@ -4,6 +4,7 @@ from typing import Generator
 from spaceone.inventory.plugin.collector.lib import *
 from plugin.connector.iam_connector import IAMConnector
 from plugin.connector.resource_manager_v3_connector import ResourceManagerV3Connector
+from plugin.connector.logging_connector import LoggingConnector
 from plugin.manager.base import ResourceManager
 
 _LOGGER = logging.getLogger("spaceone")
@@ -24,6 +25,7 @@ class ServiceAccountManager(ResourceManager):
         self.metadata_path = "metadata/service_account.yaml"
         self.iam_connector = None
         self.rm_v3_connector = None
+        self.logging_connector = None
         self.location_info = {
             "FOLDER": {},
             "PROJECT": {},
@@ -32,6 +34,7 @@ class ServiceAccountManager(ResourceManager):
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
+        self.logging_connector = LoggingConnector(options, secret_data, schema)
 
         # Get all projects
         projects = self.rm_v3_connector.list_all_projects()
