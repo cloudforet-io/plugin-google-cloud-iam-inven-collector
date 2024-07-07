@@ -34,9 +34,9 @@ tabs.0:
         MEMBER:
           label: Member
   fields:
-    - Member: data.members.preferredMemberKey.id
-    - Type: data.members.type
-    - Role in Group: data.members.role
+    - Member: preferredMemberKey.id
+    - Type: type
+    - Role in Group: role
       type: enum
       enums:
         - OWNER: blue.500
@@ -45,7 +45,7 @@ tabs.0:
           name: Manager
         - Member: gray.500
           name: Member
-    - Join Date: data.members.createTime
+    - Join Date: createTime
       type: datetime
       options:
         source_type: iso8601
