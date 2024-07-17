@@ -24,7 +24,9 @@ class GroupManager(ResourceManager):
         self.identity_connector = None
         self.rm_v3_connector = None
 
-    def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
+    def collect_cloud_services(
+        self, options: dict, secret_data: dict, schema: str
+    ) -> Generator[dict, None, None]:
         self.identity_connector = CloudIdentityConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
 
@@ -32,14 +34,16 @@ class GroupManager(ResourceManager):
             yield from self.collect_groups(organization)
 
     def collect_groups(self, organization: dict) -> Generator[dict, None, None]:
-        customer_id = organization.get('directoryCustomerId')
-        organization_id = organization.get('name')
+        customer_id = organization.get("directoryCustomerId")
+        organization_id = organization.get("name")
         organization_name = organization.get("displayName")
         groups = self.identity_connector.list_groups(customer_id)
         for group in groups:
             yield self.make_group_info(group, organization_id, organization_name)
 
-    def make_group_info(self, group: dict, organization_id: str, organization_name: str) -> dict:
+    def make_group_info(
+        self, group: dict, organization_id: str, organization_name: str
+    ) -> dict:
         group_id = group.get("name")
         name = group.get("displayName")
         organization_id = organization_id.split("/")[-1]
@@ -58,7 +62,7 @@ class GroupManager(ResourceManager):
             reference={
                 "resource_id": group_id,
                 "external_link": f"https://console.cloud.google.com/iam-admin/{group_id}?"
-                                 f"orgonly=true&organizationId={organization_id}&supportedpurview=organizationId"
+                f"orgonly=true&organizationId={organization_id}&supportedpurview=organizationId",
             },
             # data_format="grpc",
         )
