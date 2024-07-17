@@ -11,9 +11,20 @@ class CloudIdentityConnector(GoogleCloudConnector):
     version = "v1"
 
     def list_groups(self, customer_id):
+        groups = []
+
         parent = f"customers/{customer_id}"
-        result = self.client.groups().list(parent=parent).execute()
-        return result.get("groups", [])
+        request = self.client.groups().list(parent=parent)
+        while True:
+            response = request.execute()
+            groups.extend(response.get("groups", []))
+            request = (
+                self.client.groups().list_next(previous_request=request, previous_response=response)
+            )
+            if request is None:
+                break
+
+        return groups
 
     def get_group(self, name):
         result = self.client.groups().get(name=name).execute()
