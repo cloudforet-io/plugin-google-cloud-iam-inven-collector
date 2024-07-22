@@ -72,13 +72,13 @@ class RoleManager(ResourceManager):
         # Get role details
         if role_type == "PROJECT":
             role_details = self.iam_connector.get_project_role(role_id)
-            role["type"] = "CUSTOM"
+            role["role_type"] = "CUSTOM"
         elif role_type == "ORGANIZATION":
             role_details = self.iam_connector.get_organization_role(role_id)
-            role["type"] = "CUSTOM"
+            role["role_type"] = "CUSTOM"
         else:
             role_details = self.iam_connector.get_role(role_id)
-            role["type"] = role_type
+            role["role_type"] = role_type
 
         role["includedPermissions"] = role_details.get("includedPermissions", [])
         role["permissionCount"] = len(role["includedPermissions"])

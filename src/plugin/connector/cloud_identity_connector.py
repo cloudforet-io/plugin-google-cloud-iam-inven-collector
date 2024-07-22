@@ -14,16 +14,12 @@ class CloudIdentityConnector(GoogleCloudConnector):
         groups = []
         parent = f"customers/{customer_id}"
         request = self.client.groups().list(parent=parent)
-
         while True:
             response = request.execute()
-
             groups.extend(response.get("groups", []))
-
             request = self.client.groups().list_next(
-                previous_request=request, previous_response=response
+                    previous_request=request, previous_response=response
             )
-
             if request is None:
                 break
 

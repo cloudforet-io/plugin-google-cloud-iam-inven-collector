@@ -8,7 +8,7 @@ search:
         - DISABLED: red.500
           label: Disabled
     - Role ID: data.name
-    - Type: data.type
+    - Type: data.role_type
       type: enum
       enums:
         - PREDEFINED: gray.500
@@ -22,7 +22,7 @@ search:
 
 table:
   sort:
-    key: data.type
+    key: data.role_type
   fields:
     - Status: data.status
       type: enum
@@ -37,7 +37,7 @@ table:
       is_optional: true
     - Permission Count: data.permissionCount
       data_type: integer
-    - Type: data.type
+    - Type: data.role_type
       type: enum
       enums:
         - PREDEFINED: gray.500
@@ -64,7 +64,7 @@ tabs.0:
           name: Disabled
           type: state
     - Description: data.description
-    - Type: data.type
+    - Type: data.role_type
       type: enum
       enums:
         - PREDEFINED: gray.500
