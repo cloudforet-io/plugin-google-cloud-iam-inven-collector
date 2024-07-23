@@ -79,7 +79,7 @@ class PermissionManager(ResourceManager):
         organization_id = organization.get("name")
         organization_name = organization.get("displayName")
         target = {
-            "type": "ORGANIZATION",
+            "targetType": "ORGANIZATION",
             "id": organization_id,
             "name": organization_name,
             "location": organization_name
@@ -93,7 +93,7 @@ class PermissionManager(ResourceManager):
         folder_name = folder.get("displayName")
 
         target = {
-            "type": "FOLDER",
+            "targetType": "FOLDER",
             "id": folder_id,
             "name": folder_name,
             "location": self.get_folder_location(folder_id),
@@ -108,7 +108,7 @@ class PermissionManager(ResourceManager):
         project_name = project.get("name")
 
         target = {
-            "type": "PROJECT",
+            "targetType": "PROJECT",
             "id": project_id,
             "name": project_name,
             "location": self.get_project_location(project_id),
@@ -122,7 +122,7 @@ class PermissionManager(ResourceManager):
         binding_info = {
             "target": target,
         }
-        target_type = target.get("type")
+        target_type = target.get("targetType")
         target_name = target.get("name")
 
         role_id = binding.get("role")
@@ -155,7 +155,7 @@ class PermissionManager(ResourceManager):
 
             if member not in self.permission_info:
                 self.permission_info[member] = {
-                    "type": member_type,
+                    "memberType": member_type,
                     "memberId": member_id,
                     "memberName": member_id,
                     "bindings": [],
@@ -168,7 +168,7 @@ class PermissionManager(ResourceManager):
                         self.permission_info[member]["memberName"] = self.service_account_info[member_id].get("name")
                         self.permission_info[member]["projectId"] = self.service_account_info[member_id].get("projectId")
                     else:
-                        self.permission_info[member]["type"] = "googleManagedServiceAccount"
+                        self.permission_info[member]["memberType"] = "googleManagedServiceAccount"
                         if target_type == "PROJECT":
                             self.permission_info[member]["projectId"] = target["id"]
 
