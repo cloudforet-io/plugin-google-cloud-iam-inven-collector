@@ -14,7 +14,7 @@ query_options:
       name: Group Email
     - key: data.members.preferredMemberKey.id
       name: Member
-    - key: data.members.type
+    - key: data.members.memberType
       name: Member Type
     - key: data.members.role
       name: Role
@@ -23,4 +23,4 @@ query_options:
       operator: count
 unit: Count
 namespace_id: ns-google-cloud-iam-group
-version: '1.0'
+version: '1.1'
