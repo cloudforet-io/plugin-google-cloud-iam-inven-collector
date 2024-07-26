@@ -1,7 +1,7 @@
 search:
   fields:
     - Principal: data.memberId
-    - Type: data.type
+    - Type: data.memberType
       type: enum
       enums:
         - domain: yellow.500
@@ -30,7 +30,7 @@ search:
           label: Custom
     - Target ID: data.bindings.target.id
     - Target Name: data.bindings.target.name
-    - Target Type: data.bindings.target.type
+    - Target Type: data.bindings.target.targetType
       type: enum
       enums:
         - ORGANIZATION: blue.500
@@ -42,11 +42,11 @@ search:
 
 table:
   sort:
-    key: data.type
+    key: data.memberType
   fields:
     - Principal: data.memberId
       is_optional: true
-    - Type: data.type
+    - Type: data.memberType
       type: enum
       enums:
         - domain: yellow.500
@@ -83,7 +83,7 @@ tabs.0:
           label: Custom
     - key: data.bindings.role.id
       name: Role ID
-    - key: data.bindings.target.type
+    - key: data.bindings.target.targetType
       name: Target Type
       enums:
         ORGANIZATION:
@@ -121,7 +121,7 @@ tabs.0:
           options:
             layout:
               type: "raw"
-    - Target Type: target.type
+    - Target Type: target.targetType
       type: enum
       enums:
         - ORGANIZATION: blue.500

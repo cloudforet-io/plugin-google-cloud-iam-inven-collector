@@ -5,7 +5,7 @@ metric_type: GAUGE
 resource_type: inventory.CloudService:google_cloud.IAM.Role
 query_options:
   group_by:
-    - key: data.role_type
+    - key: data.roleType
       name: Role Type
       default: true
     - key: account

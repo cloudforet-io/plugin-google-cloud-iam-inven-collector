@@ -30,6 +30,8 @@ class ServiceAccountManager(ResourceManager):
             "FOLDER": {},
             "PROJECT": {},
         }
+        self.sa_id_to_last_authenticated_time = {}
+        self.sa_key_to_last_authenticated_time = {}
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
@@ -38,14 +40,23 @@ class ServiceAccountManager(ResourceManager):
 
         # Get all projects
         projects = self.rm_v3_connector.list_all_projects()
-        for project in projects:
-            if project["projectId"].startswith("sys-"):
-                continue
+        if not projects:
+            yield from self.collect_service_accounts(secret_data.get("project_id"))
+        else:
+            for project in projects:
+                if project["projectId"].startswith("sys-"):
+                    continue
 
-            yield from self.collect_service_accounts(project["projectId"])
+                yield from self.collect_service_accounts(project["projectId"])
 
     def collect_service_accounts(self, project_id: str) -> Generator[dict, None, None]:
         service_accounts = self.iam_connector.list_service_accounts(project_id)
+        self.sa_id_to_last_authenticated_time = \
+            self.logging_connector.get_all_service_account_last_authenticated_time(project_id=project_id)
+
+        self.sa_key_to_last_authenticated_time = \
+            self.logging_connector.get_all_service_account_key_last_authenticated_time(project_id=project_id)
+
         for service_account in service_accounts:
             yield self.make_cloud_service_info(service_account, project_id)
 
@@ -61,9 +72,16 @@ class ServiceAccountManager(ResourceManager):
             service_account["status"] = "ENABLED"
 
         # Get service account keys
-        keys = self.get_service_account_keys(email, project_id)
+        keys = self.get_service_account_keys(email, project_id, unique_id)
         service_account["keys"] = keys
         service_account["keyCount"] = len(keys)
+
+        if self.sa_id_to_last_authenticated_time is None:
+            service_account["lastAuthenticated"] = None
+            service_account["policyAnalyzerEnabled"] = False
+        else:
+            service_account["lastAuthenticated"] = self.sa_id_to_last_authenticated_time.get(unique_id)
+            service_account["policyAnalyzerEnabled"] = True
 
         return make_cloud_service(
             name=name,
@@ -81,11 +99,13 @@ class ServiceAccountManager(ResourceManager):
             # data_format="grpc",
         )
 
-    def get_service_account_keys(self, email: str, project_id: str) -> list:
+    def get_service_account_keys(self, email: str, project_id: str, unique_id: str) -> list:
         keys = self.iam_connector.list_service_account_keys(email, project_id)
         for key in keys:
             key["name"] = key.get("name").split("/")[-1]
             key["status"] = "ACTIVE"
+            key["lastAuthenticated"] = self.sa_key_to_last_authenticated_time.get(unique_id, {}).get(key["name"]) if self.sa_key_to_last_authenticated_time else None
+
             creation_time = key.get("validAfterTime")
             expiration_time = key.get("validBeforeTime")
 

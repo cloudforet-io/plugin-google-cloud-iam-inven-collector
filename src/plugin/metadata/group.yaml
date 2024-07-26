@@ -22,7 +22,7 @@ tabs.0:
   search:
     - key: data.members.preferredMemberKey.id
       name: Member
-    - key: data.members.type
+    - key: data.members.memberType
       name: Type
     - key: data.members.role
       name: Role in Group
