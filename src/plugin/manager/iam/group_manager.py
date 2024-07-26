@@ -73,7 +73,8 @@ class GroupManager(ResourceManager):
         for member in members:
             member_name = member.get("name")
             member_info = self.identity_connector.get_membership(member_name)
-            member_info["memberType"] = member_info.pop("type")
+            if member_info.get("memberType"):
+                member_info["memberType"] = member_info.pop("type")
             roles = member_info.get("roles", [])
             if len(roles) > 1:
                 for role in roles:

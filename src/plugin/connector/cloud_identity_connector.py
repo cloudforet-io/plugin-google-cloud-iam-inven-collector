@@ -1,5 +1,7 @@
 import logging
 from plugin.connector import GoogleCloudConnector
+from plugin.utils.error_handlers import api_retry_handler
+
 
 __all__ = ["CloudIdentityConnector"]
 
@@ -22,13 +24,14 @@ class CloudIdentityConnector(GoogleCloudConnector):
             )
             if request is None:
                 break
-
+        _LOGGER.debug(f"length of groups: {len(groups)}")
         return groups
 
     def get_group(self, name):
         result = self.client.groups().get(name=name).execute()
         return result
 
+    @api_retry_handler(default_response=[])
     def list_memberships(self, parent):
         memberships = []
         request = self.client.groups().memberships().list(parent=parent)
@@ -49,5 +52,8 @@ class CloudIdentityConnector(GoogleCloudConnector):
 
         return memberships
 
+    @api_retry_handler(default_response={})
     def get_membership(self, name):
-        return self.client.groups().memberships().get(name=name).execute()
+        result = self.client.groups().memberships().get(name=name).execute()
+        return result
+
