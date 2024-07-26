@@ -78,10 +78,10 @@ class ServiceAccountManager(ResourceManager):
 
         if self.sa_id_to_last_authenticated_time is None:
             service_account["lastAuthenticated"] = None
-            service_account["policyAnalyzerEnabled"] = False
+            service_account["policyAnalyzerEnabled"] = "DISABLED"
         else:
             service_account["lastAuthenticated"] = self.sa_id_to_last_authenticated_time.get(unique_id)
-            service_account["policyAnalyzerEnabled"] = True
+            service_account["policyAnalyzerEnabled"] = "ENABLED"
 
         return make_cloud_service(
             name=name,
