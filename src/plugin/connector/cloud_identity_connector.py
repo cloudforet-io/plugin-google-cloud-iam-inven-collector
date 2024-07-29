@@ -24,7 +24,6 @@ class CloudIdentityConnector(GoogleCloudConnector):
             )
             if request is None:
                 break
-        _LOGGER.debug(f"length of groups: {len(groups)}")
         return groups
 
     def get_group(self, name):
