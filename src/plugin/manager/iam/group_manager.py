@@ -73,21 +73,22 @@ class GroupManager(ResourceManager):
         members = self.identity_connector.list_memberships(group_id)
         for member in members:
             member_name = member.get("name")
-            last_part_of_name = member_name.split("/")[-1]
+            last_part_of_name = member_name.split("/")[-1].strip()
             if last_part_of_name not in self.member_name_to_member_info:
                 self.member_name_to_member_info[last_part_of_name] = (
                     self.identity_connector.get_membership(member_name)
                 )
             else:
-                saved_mem_id = (
+                cached_mem_id = (
                     self.member_name_to_member_info[last_part_of_name]
                     .get("preferredMemberKey")
                     .get("id")
                 )
                 curr_mem_id = member.get("preferredMemberKey").get("id")
-                if saved_mem_id != curr_mem_id:
+                if cached_mem_id != curr_mem_id:
                     _LOGGER.debug(
-                        f"[{self.__repr__()}] MEMBER_ID: {curr_mem_id} has different member_name: {last_part_of_name} from {saved_mem_id}"
+                        f"[{self.__repr__()}] MEMBER_ID: {curr_mem_id} has different member_name: {last_part_of_name} \
+                        from (cached) {cached_mem_id}: {self.member_name_to_member_info[last_part_of_name]}"
                     )
                     self.member_name_to_member_info[last_part_of_name] = (
                         self.identity_connector.get_membership(member_name)
