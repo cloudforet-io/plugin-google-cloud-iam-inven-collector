@@ -23,6 +23,7 @@ class GroupManager(ResourceManager):
         self.metadata_path = "metadata/group.yaml"
         self.identity_connector = None
         self.rm_v3_connector = None
+        self.membership_name_to_member_info = {}
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -72,7 +73,27 @@ class GroupManager(ResourceManager):
         members = self.identity_connector.list_memberships(group_id)
         for member in members:
             member_name = member.get("name")
-            member_info = self.identity_connector.get_membership(member_name)
+            _group_name, membership_name = member_name.split("/memberships/")
+            if membership_name not in self.membership_name_to_member_info:
+                self.membership_name_to_member_info[membership_name] = (
+                    self.identity_connector.get_membership(member_name)
+                )
+            else:
+                cached_mem_id = (
+                    self.membership_name_to_member_info[membership_name]
+                    .get("preferredMemberKey")
+                    .get("id")
+                )
+                curr_mem_id = member.get("preferredMemberKey").get("id")
+                if cached_mem_id != curr_mem_id:
+                    _LOGGER.debug(
+                        f"[{self.__repr__()}] MEMBER_ID: {curr_mem_id} has different member_name: {membership_name} \
+from (cached) {cached_mem_id}: {self.membership_name_to_member_info[membership_name]}"
+                    )
+                    self.membership_name_to_member_info[membership_name] = (
+                        self.identity_connector.get_membership(member_name)
+                    )
+            member_info = self.membership_name_to_member_info[membership_name]
             if member_info.get("memberType"):
                 member_info["memberType"] = member_info.pop("type")
             roles = member_info.get("roles", [])
