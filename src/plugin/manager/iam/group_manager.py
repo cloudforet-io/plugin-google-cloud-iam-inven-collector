@@ -23,7 +23,7 @@ class GroupManager(ResourceManager):
         self.metadata_path = "metadata/group.yaml"
         self.identity_connector = None
         self.rm_v3_connector = None
-        self.membership_name_to_member_info = {}
+        self.member_id_to_membership_info = {}
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -72,28 +72,22 @@ class GroupManager(ResourceManager):
         changed_members = []
         members = self.identity_connector.list_memberships(group_id)
         for member in members:
+            member_id = member.get("preferredMemberKey").get("id")
             member_name = member.get("name")
-            _group_name, membership_name = member_name.split("/memberships/")
-            if membership_name not in self.membership_name_to_member_info:
-                self.membership_name_to_member_info[membership_name] = (
+            if member_id not in self.member_id_to_membership_info:
+                self.member_id_to_membership_info[member_id] = (
                     self.identity_connector.get_membership(member_name)
                 )
             else:
-                cached_mem_id = (
-                    self.membership_name_to_member_info[membership_name]
-                    .get("preferredMemberKey")
-                    .get("id")
-                )
-                curr_mem_id = member.get("preferredMemberKey").get("id")
-                if cached_mem_id != curr_mem_id:
+                _, cached_mem_name = self.member_id_to_membership_info[member_id].get("name").split("/memberships/")
+                _, curr_mem_name = member_name.split("/memberships/")
+                if cached_mem_name != curr_mem_name:
                     _LOGGER.debug(
-                        f"[{self.__repr__()}] MEMBER_ID: {curr_mem_id} has different member_name: {membership_name} \
-from (cached) {cached_mem_id}: {self.membership_name_to_member_info[membership_name]}"
+                        f"[{self.__repr__()}] MEMBERSHIP_NAME: {curr_mem_name} has different member_id: {member_id} \
+from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
                     )
-                    self.membership_name_to_member_info[membership_name] = (
-                        self.identity_connector.get_membership(member_name)
-                    )
-            member_info = self.membership_name_to_member_info[membership_name]
+                    self.member_id_to_membership_info[member_id] = self.identity_connector.get_membership(member_name)
+            member_info = self.member_id_to_membership_info[member_id]
             if member_info.get("memberType"):
                 member_info["memberType"] = member_info.pop("type")
             roles = member_info.get("roles", [])
