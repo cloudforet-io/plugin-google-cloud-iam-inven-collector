@@ -23,6 +23,7 @@ class GroupManager(ResourceManager):
         self.metadata_path = "metadata/group.yaml"
         self.identity_connector = None
         self.rm_v3_connector = None
+        self.member_name_to_member_info = {}
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -72,7 +73,26 @@ class GroupManager(ResourceManager):
         members = self.identity_connector.list_memberships(group_id)
         for member in members:
             member_name = member.get("name")
-            member_info = self.identity_connector.get_membership(member_name)
+            last_part_of_name = member_name.split("/")[-1]
+            if last_part_of_name not in self.member_name_to_member_info:
+                self.member_name_to_member_info[last_part_of_name] = (
+                    self.identity_connector.get_membership(member_name)
+                )
+            else:
+                saved_mem_id = (
+                    self.member_name_to_member_info[last_part_of_name]
+                    .get("preferredMemberKey")
+                    .get("id")
+                )
+                curr_mem_id = member.get("preferredMemberKey").get("id")
+                if saved_mem_id != curr_mem_id:
+                    _LOGGER.debug(
+                        f"[{self.__repr__()}] MEMBER_ID: {curr_mem_id} has different member_name: {last_part_of_name} from {saved_mem_id}"
+                    )
+                    self.member_name_to_member_info[last_part_of_name] = (
+                        self.identity_connector.get_membership(member_name)
+                    )
+            member_info = self.member_name_to_member_info[last_part_of_name]
             if member_info.get("memberType"):
                 member_info["memberType"] = member_info.pop("type")
             roles = member_info.get("roles", [])
