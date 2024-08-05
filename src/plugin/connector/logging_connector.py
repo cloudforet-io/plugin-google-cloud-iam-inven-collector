@@ -2,6 +2,8 @@ import logging
 from plugin.connector import GoogleCloudConnector
 import requests
 import google.auth.transport.requests
+from plugin.utils.error_handlers import api_retry_handler
+
 __all__ = ["LoggingConnector"]
 
 _LOGGER = logging.getLogger("spaceone")
@@ -11,6 +13,7 @@ class LoggingConnector(GoogleCloudConnector):
     google_client_service = "logging"
     version = "v2"
 
+    @api_retry_handler(default_response=[])
     def list_entries(self, project_id: str) -> list:
         body = {
             "resourceNames": [f"projects/{project_id}"],
@@ -28,9 +31,10 @@ class LoggingConnector(GoogleCloudConnector):
     def get_all_service_account_key_last_authenticated_time(self, project_id: str):
         return self._get_all_service_account_last_authenticated_time(project_id, is_key=True)
 
+    @api_retry_handler(default_response={})
     def _get_all_service_account_last_authenticated_time(self, project_id: str, is_key: bool):
         activity_type = "serviceAccountLastAuthentication" if not is_key else "serviceAccountKeyLastAuthentication"
-        page_size = 150  # TODO: Check what's the maximum
+        page_size = 1000
         url = f"https://policyanalyzer.googleapis.com/v1/projects/{project_id}/locations/global/activityTypes/{activity_type}/activities:query?pageSize={page_size}"
         scopes = ["https://www.googleapis.com/auth/cloud-platform"]
         credentials = self.credentials.with_scopes(scopes)
