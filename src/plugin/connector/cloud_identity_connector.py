@@ -12,6 +12,7 @@ class CloudIdentityConnector(GoogleCloudConnector):
     google_client_service = "cloudidentity"
     version = "v1"
 
+    @api_retry_handler(default_response=[])
     def list_groups(self, customer_id):
         groups = []
         parent = f"customers/{customer_id}"
@@ -26,6 +27,7 @@ class CloudIdentityConnector(GoogleCloudConnector):
                 break
         return groups
 
+    @api_retry_handler(default_response={})
     def get_group(self, name):
         result = self.client.groups().get(name=name).execute()
         return result
