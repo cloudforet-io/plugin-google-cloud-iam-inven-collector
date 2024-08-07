@@ -30,13 +30,11 @@ class ServiceAccountManager(ResourceManager):
             "FOLDER": {},
             "PROJECT": {},
         }
-        self.sa_id_to_last_authenticated_time = {}
-        self.sa_key_to_last_authenticated_time = {}
 
     def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
-        self.logging_connector = LoggingConnector(options, secret_data, schema)
+        self.logging_connector = LoggingConnector(options=options, secret_data=secret_data, schema=schema)
 
         # Get all projects
         projects = self.rm_v3_connector.list_all_projects()
@@ -51,12 +49,6 @@ class ServiceAccountManager(ResourceManager):
 
     def collect_service_accounts(self, project_id: str) -> Generator[dict, None, None]:
         service_accounts = self.iam_connector.list_service_accounts(project_id)
-        self.sa_id_to_last_authenticated_time = \
-            self.logging_connector.get_all_service_account_last_authenticated_time(project_id=project_id)
-
-        self.sa_key_to_last_authenticated_time = \
-            self.logging_connector.get_all_service_account_key_last_authenticated_time(project_id=project_id)
-
         for service_account in service_accounts:
             yield self.make_cloud_service_info(service_account, project_id)
 
@@ -70,18 +62,11 @@ class ServiceAccountManager(ResourceManager):
             service_account["status"] = "DISABLED"
         else:
             service_account["status"] = "ENABLED"
+        service_account["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email)
 
-        # Get service account keys
         keys = self.get_service_account_keys(email, project_id, unique_id)
         service_account["keys"] = keys
         service_account["keyCount"] = len(keys)
-
-        if self.sa_id_to_last_authenticated_time is None:
-            service_account["lastAuthenticated"] = None
-            service_account["policyAnalyzerEnabled"] = "DISABLED"
-        else:
-            service_account["lastAuthenticated"] = self.sa_id_to_last_authenticated_time.get(unique_id)
-            service_account["policyAnalyzerEnabled"] = "ENABLED"
 
         return make_cloud_service(
             name=name,
@@ -104,7 +89,6 @@ class ServiceAccountManager(ResourceManager):
         for key in keys:
             key["name"] = key.get("name").split("/")[-1]
             key["status"] = "ACTIVE"
-            key["lastAuthenticated"] = self.sa_key_to_last_authenticated_time.get(unique_id, {}).get(key["name"]) if self.sa_key_to_last_authenticated_time else None
 
             creation_time = key.get("validAfterTime")
             expiration_time = key.get("validBeforeTime")
