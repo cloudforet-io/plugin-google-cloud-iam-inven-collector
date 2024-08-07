@@ -48,6 +48,21 @@ def _create_init_metadata() -> dict:
                 "inventory.Region",
                 "inventory.ErrorResource",
             ],
+
+            "options_schema": {
+                "type": "object",
+                "properties": {
+                    "log_search_period": {
+                        "title": "Log Search Period for Service Accounts",
+                        "type": "string",
+                        "items": {"type": "string"},
+                        "default": "3 Months",
+                        "enum": ["1 Month", "3 Months", "6 Months", "1 Year"],
+                        "description": "Select the period to search for the last activity log for the service accounts.\
+ The longer the period, the longer it will take to collect data.",
+                    }
+                }
+            },
         }
     }
 
