@@ -39,7 +39,9 @@ class IAMConnector(GoogleCloudConnector):
         return service_accounts
 
     @api_retry_handler(default_response=[])
-    def list_service_account_keys(self, service_account_email: str, project_id: str = None):
+    def list_service_account_keys(
+        self, service_account_email: str, project_id: str = None
+    ):
         project_id = project_id or self.project_id
         query = {
             "name": f"projects/{project_id}/serviceAccounts/{service_account_email}"

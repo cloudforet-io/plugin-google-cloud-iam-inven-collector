@@ -36,19 +36,29 @@ class ResourceManager(BaseManager):
     def __repr__(self):
         return f"{self.__class__.__name__}"
 
-    def collect_resources(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
+    def collect_resources(
+        self, options: dict, secret_data: dict, schema: str
+    ) -> Generator[dict, None, None]:
         try:
-            _LOGGER.debug(f"[{self.__repr__()}] Collect cloud service type: "
-                          f"{self.cloud_service_group} > {self.cloud_service_type}")
+            _LOGGER.debug(
+                f"[{self.__repr__()}] Collect cloud service type: "
+                f"{self.cloud_service_group} > {self.cloud_service_type}"
+            )
             yield self.get_cloud_service_type()
 
-            _LOGGER.debug(f"[{self.__repr__()}] Collect metrics: "
-                          f"{self.cloud_service_group} > {self.cloud_service_type}")
+            _LOGGER.debug(
+                f"[{self.__repr__()}] Collect metrics: "
+                f"{self.cloud_service_group} > {self.cloud_service_type}"
+            )
             yield from self.collect_metrics()
 
-            _LOGGER.debug(f"[{self.__repr__()}] Collect cloud services: "
-                          f"{self.cloud_service_group} > {self.cloud_service_type}")
-            response_iterator = self.collect_cloud_services(options, secret_data, schema)
+            _LOGGER.debug(
+                f"[{self.__repr__()}] Collect cloud services: "
+                f"{self.cloud_service_group} > {self.cloud_service_type}"
+            )
+            response_iterator = self.collect_cloud_services(
+                options, secret_data, schema
+            )
             for response in response_iterator:
                 try:
                     yield make_response(
@@ -82,7 +92,9 @@ class ResourceManager(BaseManager):
             )
 
     @abc.abstractmethod
-    def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
+    def collect_cloud_services(
+        self, options: dict, secret_data: dict, schema: str
+    ) -> Generator[dict, None, None]:
         raise ERROR_NOT_IMPLEMENTED()
 
     def get_cloud_service_type(self) -> dict:
@@ -119,9 +131,13 @@ class ResourceManager(BaseManager):
 
     def collect_metrics(self) -> dict:
         for dirname in os.listdir(os.path.join(METRIC_DIR, self.cloud_service_group)):
-            for filename in os.listdir(os.path.join(METRIC_DIR, self.cloud_service_group, dirname)):
+            for filename in os.listdir(
+                os.path.join(METRIC_DIR, self.cloud_service_group, dirname)
+            ):
                 if filename.endswith(".yaml"):
-                    file_path = os.path.join(METRIC_DIR, self.cloud_service_group, dirname, filename)
+                    file_path = os.path.join(
+                        METRIC_DIR, self.cloud_service_group, dirname, filename
+                    )
                     info = utils.load_yaml_from_file(file_path)
                     if filename == "namespace.yaml":
                         yield make_response(

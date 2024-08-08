@@ -30,7 +30,9 @@ class PermissionManager(ResourceManager):
             "PROJECT": {},
         }
 
-    def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
+    def collect_cloud_services(
+        self, options: dict, secret_data: dict, schema: str
+    ) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
 
@@ -82,7 +84,7 @@ class PermissionManager(ResourceManager):
             "targetType": "ORGANIZATION",
             "id": organization_id,
             "name": organization_name,
-            "location": organization_name
+            "location": organization_name,
         }
         bindings = self.rm_v3_connector.get_organization_iam_policies(organization_id)
         for binding in bindings:
@@ -165,10 +167,16 @@ class PermissionManager(ResourceManager):
 
                 if member_type == "serviceAccount":
                     if member_id in self.service_account_info:
-                        self.permission_info[member]["memberName"] = self.service_account_info[member_id].get("name")
-                        self.permission_info[member]["projectId"] = self.service_account_info[member_id].get("projectId")
+                        self.permission_info[member]["memberName"] = (
+                            self.service_account_info[member_id].get("name")
+                        )
+                        self.permission_info[member]["projectId"] = (
+                            self.service_account_info[member_id].get("projectId")
+                        )
                     else:
-                        self.permission_info[member]["memberType"] = "googleManagedServiceAccount"
+                        self.permission_info[member][
+                            "memberType"
+                        ] = "googleManagedServiceAccount"
                         if target_type == "PROJECT":
                             self.permission_info[member]["projectId"] = target["id"]
 
@@ -199,7 +207,9 @@ class PermissionManager(ResourceManager):
         parent = folder.get("parent")
         if parent.startswith("organizations/"):
             organization = self.rm_v3_connector.get_organization(parent)
-            location = f"{organization.get('displayName')} > {folder.get('displayName')}"
+            location = (
+                f"{organization.get('displayName')} > {folder.get('displayName')}"
+            )
         else:
             parent_location = self.get_folder_location(parent)
             location = f"{parent_location} > {folder.get('displayName')}"
@@ -215,7 +225,9 @@ class PermissionManager(ResourceManager):
         parent = project.get("parent")
         if parent.startswith("organizations/"):
             organization = self.rm_v3_connector.get_organization(parent)
-            location = f"{organization.get('displayName')} > {project.get('displayName')}"
+            location = (
+                f"{organization.get('displayName')} > {project.get('displayName')}"
+            )
         else:
             parent_location = self.get_folder_location(parent)
             location = f"{parent_location} > {project.get('displayName')}"

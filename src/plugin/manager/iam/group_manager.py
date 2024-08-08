@@ -79,14 +79,20 @@ class GroupManager(ResourceManager):
                     self.identity_connector.get_membership(member_name)
                 )
             else:
-                _, cached_mem_name = self.member_id_to_membership_info[member_id].get("name").split("/memberships/")
+                _, cached_mem_name = (
+                    self.member_id_to_membership_info[member_id]
+                    .get("name")
+                    .split("/memberships/")
+                )
                 _, curr_mem_name = member_name.split("/memberships/")
                 if cached_mem_name != curr_mem_name:
                     _LOGGER.debug(
                         f"[{self.__repr__()}] MEMBERSHIP_NAME: {curr_mem_name} has different member_id: {member_id} \
 from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
                     )
-                    self.member_id_to_membership_info[member_id] = self.identity_connector.get_membership(member_name)
+                    self.member_id_to_membership_info[member_id] = (
+                        self.identity_connector.get_membership(member_name)
+                    )
             member_info = self.member_id_to_membership_info[member_id]
             if member_info.get("memberType"):
                 member_info["memberType"] = member_info.pop("type")

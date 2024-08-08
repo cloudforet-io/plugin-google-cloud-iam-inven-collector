@@ -24,7 +24,9 @@ class RoleManager(ResourceManager):
         self.iam_connector = None
         self.rm_v3_connector = None
 
-    def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
+    def collect_cloud_services(
+        self, options: dict, secret_data: dict, schema: str
+    ) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
         default_project_id = secret_data.get("project_id")
@@ -44,13 +46,17 @@ class RoleManager(ResourceManager):
         for project in projects:
             yield from self.collect_project_roles(project["projectId"])
 
-    def collect_organization_roles(self, organization: dict, default_project_id: str) -> Generator[dict, None, None]:
+    def collect_organization_roles(
+        self, organization: dict, default_project_id: str
+    ) -> Generator[dict, None, None]:
         organization_id = organization.get("name")
         organization_name = organization.get("displayName")
         location = f"organizations/{organization_name}"
         roles = self.iam_connector.list_organization_roles(organization_id)
         for role in roles:
-            yield self.make_role_info(role, default_project_id, "ORGANIZATION", location)
+            yield self.make_role_info(
+                role, default_project_id, "ORGANIZATION", location
+            )
 
     def collect_project_roles(self, project_id: str) -> Generator[dict, None, None]:
         roles = self.iam_connector.list_project_roles(project_id)
@@ -58,7 +64,9 @@ class RoleManager(ResourceManager):
         for role in roles:
             yield self.make_role_info(role, project_id, "PROJECT", location)
 
-    def make_role_info(self, role: dict, project_id: str, role_type: str, location: str = None) -> dict:
+    def make_role_info(
+        self, role: dict, project_id: str, role_type: str, location: str = None
+    ) -> dict:
         name = role.get("title")
         role_id = role.get("name")
         role_url = role_id.replace("/", "<")
@@ -94,7 +102,7 @@ class RoleManager(ResourceManager):
             reference={
                 "resource_id": role_id,
                 "external_link": f"https://console.cloud.google.com/iam-admin/roles/details/{role_url}?"
-                                 f"project={project_id}"
+                f"project={project_id}",
             },
             # data_format="grpc",
         )
