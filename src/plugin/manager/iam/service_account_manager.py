@@ -63,7 +63,7 @@ class ServiceAccountManager(ResourceManager):
         else:
             service_account["status"] = "ENABLED"
         service_account["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email)
-        service_account["lastActivityDescription"] = f"Has an activity log during the last {self.logging_connector.log_search_period}" if service_account["lastActivityTime"] else f"No activity log during the last {self.logging_connector.log_search_period}"
+        service_account["lastActivityDescription"] = f"Activity log found in the last {self.logging_connector.log_search_period}" if service_account["lastActivityTime"] else f"No activity log found in the last {self.logging_connector.log_search_period}"
         keys = self.get_service_account_keys(email, project_id)
         service_account["keys"] = keys
         service_account["keyCount"] = len(keys)
