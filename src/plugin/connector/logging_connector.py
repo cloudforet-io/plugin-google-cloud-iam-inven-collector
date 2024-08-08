@@ -15,7 +15,7 @@ class LoggingConnector(GoogleCloudConnector):
 
     def __init__(self, options: dict, secret_data: dict, schema: str, *args, **kwargs):
         super().__init__(options=options, secret_data=secret_data, schema=schema, *args, **kwargs)
-        self.log_search_period = options.get("log_search_period")
+        self.log_search_period = options.get("log_search_period", "3 Months")
 
     @api_retry_handler(default_response=[])
     def list_entries(self, project_id: str) -> list:

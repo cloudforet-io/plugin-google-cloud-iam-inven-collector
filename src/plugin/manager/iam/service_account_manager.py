@@ -91,6 +91,7 @@ class ServiceAccountManager(ResourceManager):
             key["name"] = key_full_name.split("/")[-1]
             key["status"] = "ACTIVE"
             key["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email, key_full_name)
+            key["lastActivityDescription"] = f"Activity log found in the last {self.logging_connector.log_search_period}" if key["lastActivityTime"] else f"No activity log found in the last {self.logging_connector.log_search_period}"
 
             creation_time = key.get("validAfterTime")
             expiration_time = key.get("validBeforeTime")
