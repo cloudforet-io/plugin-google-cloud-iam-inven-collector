@@ -63,8 +63,8 @@ class ServiceAccountManager(ResourceManager):
         else:
             service_account["status"] = "ENABLED"
         service_account["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email)
-
-        keys = self.get_service_account_keys(email, project_id, unique_id)
+        service_account["lastActivityDescription"] = f"Activity log found in the last {self.logging_connector.log_search_period}" if service_account["lastActivityTime"] else f"No activity log found in the last {self.logging_connector.log_search_period}"
+        keys = self.get_service_account_keys(email, project_id)
         service_account["keys"] = keys
         service_account["keyCount"] = len(keys)
 
@@ -84,11 +84,13 @@ class ServiceAccountManager(ResourceManager):
             # data_format="grpc",
         )
 
-    def get_service_account_keys(self, email: str, project_id: str, unique_id: str) -> list:
+    def get_service_account_keys(self, email: str, project_id: str) -> list:
         keys = self.iam_connector.list_service_account_keys(email, project_id)
         for key in keys:
-            key["name"] = key.get("name").split("/")[-1]
+            key_full_name = key.get("name")
+            key["name"] = key_full_name.split("/")[-1]
             key["status"] = "ACTIVE"
+            key["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email, key_full_name)
 
             creation_time = key.get("validAfterTime")
             expiration_time = key.get("validBeforeTime")

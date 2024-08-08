@@ -29,18 +29,21 @@ class LoggingConnector(GoogleCloudConnector):
         entries = response.get("entries", [])
         return entries
 
-    def get_last_log_entry_timestamp(self, project_id: str, service_account_email: str):
-        log_entries = (self._list_entries_service_accounts(project_id, service_account_email))
+    def get_last_log_entry_timestamp(self, project_id: str, service_account_email: str, service_account_key_name: str=None):
+        log_entries = (self._list_entries_service_accounts(project_id, service_account_email, service_account_key_name))
         if not log_entries:
             return None
         timestamp = log_entries[0].get("timestamp")
         return timestamp
 
     @api_retry_handler(default_response=[])
-    def _list_entries_service_accounts(self, project_id: str, service_account_email: str) -> list:
+    def _list_entries_service_accounts(self, project_id: str, service_account_email: str, service_account_key_name) -> list:
         filter_str = (
             f"protoPayload.authenticationInfo.principalEmail=\"{service_account_email}\""
         )
+        if service_account_key_name:
+            full_name = f"//iam.googleapis.com/{service_account_key_name}"
+            filter_str += f" AND protoPayload.authenticationInfo.serviceAccountKeyName=\"{full_name}\""
         filter_str += self._get_timestamp_filter_str(datetime.utcnow())
 
         body = {

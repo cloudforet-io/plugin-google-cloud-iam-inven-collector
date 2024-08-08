@@ -50,6 +50,7 @@ def _create_init_metadata() -> dict:
             ],
 
             "options_schema": {
+                "required": ["log_search_period"],
                 "type": "object",
                 "properties": {
                     "log_search_period": {
