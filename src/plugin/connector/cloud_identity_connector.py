@@ -16,7 +16,7 @@ class CloudIdentityConnector(GoogleCloudConnector):
     def list_groups(self, customer_id):
         groups = []
         parent = f"customers/{customer_id}"
-        request = self.client.groups().list(parent=parent)
+        request = self.client.groups().list(parent=parent, pageSize=1000)
         while True:
             response = request.execute()
             groups.extend(response.get("groups", []))
@@ -27,15 +27,14 @@ class CloudIdentityConnector(GoogleCloudConnector):
                 break
         return groups
 
-    @api_retry_handler(default_response={})
-    def get_group(self, name):
-        result = self.client.groups().get(name=name).execute()
-        return result
-
     @api_retry_handler(default_response=[])
     def list_memberships(self, parent):
         memberships = []
-        request = self.client.groups().memberships().list(parent=parent)
+        request = (
+            self.client.groups()
+            .memberships()
+            .list(parent=parent, pageSize=500, view="FULL")
+        )
 
         while True:
             response = request.execute()
@@ -52,8 +51,3 @@ class CloudIdentityConnector(GoogleCloudConnector):
                 break
 
         return memberships
-
-    @api_retry_handler(default_response={})
-    def get_membership(self, name):
-        result = self.client.groups().memberships().get(name=name).execute()
-        return result

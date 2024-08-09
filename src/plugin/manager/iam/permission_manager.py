@@ -29,6 +29,11 @@ class PermissionManager(ResourceManager):
             "FOLDER": {},
             "PROJECT": {},
         }
+        self.role_id_to_info = {
+            "organization_roles": {},
+            "project_roles": {},
+            "predefined_roles": {},
+        }
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -36,21 +41,53 @@ class PermissionManager(ResourceManager):
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
 
+        organizations = self.rm_v3_connector.search_organizations()
+        folders = self.rm_v3_connector.search_folders()
+        projects = self.rm_v3_connector.list_all_projects()
+
+        if ResourceManager.common_data.get("are_roles_synced"):
+            predefined_roles = ResourceManager.common_data["role_lists"][
+                "predefined_roles"
+            ]
+            organization_roles = ResourceManager.common_data["role_lists"][
+                "organization_roles"
+            ]
+            project_roles = ResourceManager.common_data["role_lists"]["project_roles"]
+
+        else:
+            predefined_roles = self.iam_connector.list_roles()
+            organization_roles = []
+            for organization in organizations:
+                organization_roles = self.iam_connector.list_organization_roles(
+                    organization["name"]
+                )
+            project_roles = []
+            for project in projects:
+                project_roles = self.iam_connector.list_project_roles(
+                    project["projectId"]
+                )
+
+        pre_role_id_to_info = {role.get("name"): role for role in predefined_roles}
+        self.role_id_to_info["predefined_roles"] = pre_role_id_to_info
+
+        org_role_id_to_info = {role.get("name"): role for role in organization_roles}
+        self.role_id_to_info["organization_roles"] = org_role_id_to_info
+
+        pro_role_id_to_info = {role.get("name"): role for role in project_roles}
+        self.role_id_to_info["project_roles"] = pro_role_id_to_info
+
         # Get service account info
         self.get_service_account_info()
 
         # Get organization permissions
-        organizations = self.rm_v3_connector.search_organizations()
         for organization in organizations:
             self.collect_organization_permissions(organization)
 
         # Get folder permissions
-        folders = self.rm_v3_connector.search_folders()
         for folder in folders:
             self.collect_folder_permissions(folder)
 
         # Get all projects
-        projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             self.collect_project_permissions(project)
 
@@ -130,13 +167,13 @@ class PermissionManager(ResourceManager):
         role_id = binding.get("role")
 
         if role_id.startswith("organizations/"):
-            role_details = self.iam_connector.get_organization_role(role_id)
+            role_details = self.role_id_to_info["organization_roles"].get(role_id)
             role_type = "CUSTOM"
         elif role_id.startswith("projects/"):
-            role_details = self.iam_connector.get_project_role(role_id)
+            role_details = self.role_id_to_info["project_roles"].get(role_id)
             role_type = "CUSTOM"
         else:
-            role_details = self.iam_connector.get_role(role_id)
+            role_details = self.role_id_to_info["predefined_roles"].get(role_id)
             role_type = "PREDEFINED"
 
         binding_info["role"] = {

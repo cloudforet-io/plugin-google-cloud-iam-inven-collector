@@ -23,7 +23,6 @@ class GroupManager(ResourceManager):
         self.metadata_path = "metadata/group.yaml"
         self.identity_connector = None
         self.rm_v3_connector = None
-        self.member_id_to_membership_info = {}
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -71,29 +70,7 @@ class GroupManager(ResourceManager):
     def get_group_members(self, group_id: str) -> list:
         changed_members = []
         members = self.identity_connector.list_memberships(group_id)
-        for member in members:
-            member_id = member.get("preferredMemberKey").get("id")
-            member_name = member.get("name")
-            if member_id not in self.member_id_to_membership_info:
-                self.member_id_to_membership_info[member_id] = (
-                    self.identity_connector.get_membership(member_name)
-                )
-            else:
-                _, cached_mem_name = (
-                    self.member_id_to_membership_info[member_id]
-                    .get("name")
-                    .split("/memberships/")
-                )
-                _, curr_mem_name = member_name.split("/memberships/")
-                if cached_mem_name != curr_mem_name:
-                    _LOGGER.debug(
-                        f"[{self.__repr__()}] MEMBERSHIP_NAME: {curr_mem_name} has different member_id: {member_id} \
-from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
-                    )
-                    self.member_id_to_membership_info[member_id] = (
-                        self.identity_connector.get_membership(member_name)
-                    )
-            member_info = self.member_id_to_membership_info[member_id]
+        for member_info in members:
             if member_info.get("memberType"):
                 member_info["memberType"] = member_info.pop("type")
             roles = member_info.get("roles", [])
@@ -101,8 +78,9 @@ from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
                 for role in roles:
                     if role.get("name") != "MEMBER":
                         member_info["role"] = role.get("name")
-
-                member_info["role"] = "MEMBER"
+                        break
+                if "role" not in member_info:
+                    member_info["role"] = "MEMBER"
             changed_members.append(member_info)
 
         return changed_members

@@ -74,9 +74,9 @@ class ServiceAccountManager(ResourceManager):
             if service_account["lastActivityTime"]
             else f"No activity log found in the past {self.logging_connector.log_search_period.lower()}"
         )
-        keys = self.get_service_account_keys(email, project_id)
-        service_account["keys"] = keys
-        service_account["keyCount"] = len(keys)
+        # keys = self.get_service_account_keys(email, project_id)
+        # service_account["keys"] = keys
+        # service_account["keyCount"] = len(keys)
 
         return make_cloud_service(
             name=name,

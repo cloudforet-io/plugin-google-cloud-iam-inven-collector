@@ -20,6 +20,7 @@ __all__ = ["ResourceManager"]
 
 class ResourceManager(BaseManager):
     service = None
+    common_data = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
