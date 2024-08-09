@@ -42,7 +42,7 @@ class PermissionManager(ResourceManager):
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
 
         roles = self.iam_connector.list_roles()
-        role_id_to_info = {role_id: role_info for role_id, role_info in roles.items()}
+        role_id_to_info = {role.get("name"): role for role in roles}
         self.role_id_to_info["predefined_roles"] = role_id_to_info
 
         # Get service account info
@@ -52,9 +52,7 @@ class PermissionManager(ResourceManager):
         organizations = self.rm_v3_connector.search_organizations()
         for organization in organizations:
             roles = self.iam_connector.list_organization_roles(organization["name"])
-            role_id_to_info = {
-                role_id: role_info for role_id, role_info in roles.items()
-            }
+            role_id_to_info = {role.get("name"): role for role in roles}
             self.role_id_to_info["organization_roles"].update(role_id_to_info)
             self.collect_organization_permissions(organization)
 
@@ -67,9 +65,7 @@ class PermissionManager(ResourceManager):
         projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             roles = self.iam_connector.list_project_roles(project["projectId"])
-            role_id_to_info = {
-                role_id: role_info for role_id, role_info in roles.items()
-            }
+            role_id_to_info = {role.get("name"): role for role in roles}
             self.role_id_to_info["project_roles"].update(role_id_to_info)
             self.collect_project_permissions(project)
 
