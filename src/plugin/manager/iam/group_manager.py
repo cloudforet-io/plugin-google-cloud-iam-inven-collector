@@ -87,8 +87,8 @@ class GroupManager(ResourceManager):
                 _, curr_mem_name = member_name.split("/memberships/")
                 if cached_mem_name != curr_mem_name:
                     _LOGGER.debug(
-                        f"[{self.__repr__()}] MEMBERSHIP_NAME: {curr_mem_name} has different member_id: {member_id} \
-from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
+                        f"[{self.__repr__()}] MEMBERSHIP_NAME: {curr_mem_name} has different member_id: "
+                        f"{member_id} from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
                     )
                     self.member_id_to_membership_info[member_id] = (
                         self.identity_connector.get_membership(member_name)
@@ -101,8 +101,9 @@ from (cached) {cached_mem_name}: {self.member_id_to_membership_info[member_id]}"
                 for role in roles:
                     if role.get("name") != "MEMBER":
                         member_info["role"] = role.get("name")
-
-                member_info["role"] = "MEMBER"
+                        break
+                if "role" not in member_info:
+                    member_info["role"] = "MEMBER"
             changed_members.append(member_info)
 
         return changed_members
