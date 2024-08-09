@@ -49,3 +49,7 @@ tabs.0:
       type: datetime
       options:
         source_type: iso8601
+    - Update Date: updateTime
+      type: datetime
+      options:
+        source_type: iso8601
