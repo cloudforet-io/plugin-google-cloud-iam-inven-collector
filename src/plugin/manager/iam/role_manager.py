@@ -23,6 +23,16 @@ class RoleManager(ResourceManager):
         self.metadata_path = "metadata/role.yaml"
         self.iam_connector = None
         self.rm_v3_connector = None
+        ResourceManager.common_data.update(
+            {
+                "role_lists": {
+                    "organization_roles": [],
+                    "project_roles": [],
+                    "predefined_roles": [],
+                },
+                "are_roles_synced": False,
+            }
+        )
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -32,8 +42,10 @@ class RoleManager(ResourceManager):
         default_project_id = secret_data.get("project_id")
 
         # Get all roles
-        roles = self.iam_connector.list_roles()
-        for role in roles:
+        ResourceManager.common_data["role_lists"]["predefined_roles"].extend(
+            self.iam_connector.list_roles()
+        )
+        for role in ResourceManager.common_data["role_lists"]["predefined_roles"]:
             yield self.make_role_info(role, default_project_id, "PREDEFINED")
 
         # get Organization roles
@@ -45,6 +57,7 @@ class RoleManager(ResourceManager):
         projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             yield from self.collect_project_roles(project["projectId"])
+        ResourceManager.common_data["are_roles_synced"] = True
 
     def collect_organization_roles(
         self, organization: dict, default_project_id: str
@@ -53,6 +66,7 @@ class RoleManager(ResourceManager):
         organization_name = organization.get("displayName")
         location = f"organizations/{organization_name}"
         roles = self.iam_connector.list_organization_roles(organization_id)
+        ResourceManager.common_data["role_lists"]["organization_roles"].extend(roles)
         for role in roles:
             yield self.make_role_info(
                 role, default_project_id, "ORGANIZATION", location
@@ -60,6 +74,7 @@ class RoleManager(ResourceManager):
 
     def collect_project_roles(self, project_id: str) -> Generator[dict, None, None]:
         roles = self.iam_connector.list_project_roles(project_id)
+        ResourceManager.common_data["role_lists"]["project_roles"].extend(roles)
         location = f"projects/{project_id}"
         for role in roles:
             yield self.make_role_info(role, project_id, "PROJECT", location)
