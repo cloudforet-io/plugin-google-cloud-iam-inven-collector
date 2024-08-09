@@ -41,18 +41,22 @@ class PermissionManager(ResourceManager):
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
 
+        roles = self.iam_connector.list_roles()
+        role_id_to_info = {role_id: role_info for role_id, role_info in roles.items()}
+        self.role_id_to_info["predefined_roles"] = role_id_to_info
+
         # Get service account info
         self.get_service_account_info()
 
         # Get organization permissions
         organizations = self.rm_v3_connector.search_organizations()
         for organization in organizations:
-            self.collect_organization_permissions(organization)
             roles = self.iam_connector.list_organization_roles(organization["name"])
             role_id_to_info = {
                 role_id: role_info for role_id, role_info in roles.items()
             }
             self.role_id_to_info["organization_roles"].update(role_id_to_info)
+            self.collect_organization_permissions(organization)
 
         # Get folder permissions
         folders = self.rm_v3_connector.search_folders()
@@ -62,17 +66,12 @@ class PermissionManager(ResourceManager):
         # Get all projects
         projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
-            self.collect_project_permissions(project)
             roles = self.iam_connector.list_project_roles(project["projectId"])
             role_id_to_info = {
                 role_id: role_info for role_id, role_info in roles.items()
             }
             self.role_id_to_info["project_roles"].update(role_id_to_info)
-
-        # Get all roles
-        roles = self.iam_connector.list_roles()
-        role_id_to_info = {role_id: role_info for role_id, role_info in roles.items()}
-        self.role_id_to_info["predefined_roles"] = role_id_to_info
+            self.collect_project_permissions(project)
 
         yield from self.make_permission_info()
 

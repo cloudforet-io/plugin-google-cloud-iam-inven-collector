@@ -30,7 +30,11 @@ class CloudIdentityConnector(GoogleCloudConnector):
     @api_retry_handler(default_response=[])
     def list_memberships(self, parent):
         memberships = []
-        request = self.client.groups().memberships().list(parent=parent, pageSize=500, view='FULL')
+        request = (
+            self.client.groups()
+            .memberships()
+            .list(parent=parent, pageSize=500, view="FULL")
+        )
 
         while True:
             response = request.execute()
