@@ -21,7 +21,7 @@ class CloudIdentityConnector(GoogleCloudConnector):
             response = request.execute()
             groups.extend(response.get("groups", []))
             request = self.client.groups().list_next(
-                    previous_request=request, previous_response=response
+                previous_request=request, previous_response=response
             )
             if request is None:
                 break
@@ -57,4 +57,3 @@ class CloudIdentityConnector(GoogleCloudConnector):
     def get_membership(self, name):
         result = self.client.groups().memberships().get(name=name).execute()
         return result
-

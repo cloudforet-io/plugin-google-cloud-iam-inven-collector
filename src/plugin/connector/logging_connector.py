@@ -14,7 +14,9 @@ class LoggingConnector(GoogleCloudConnector):
     version = "v2"
 
     def __init__(self, options: dict, secret_data: dict, schema: str, *args, **kwargs):
-        super().__init__(options=options, secret_data=secret_data, schema=schema, *args, **kwargs)
+        super().__init__(
+            options=options, secret_data=secret_data, schema=schema, *args, **kwargs
+        )
         self.log_search_period = options.get("log_search_period", "3 Months")
 
     @api_retry_handler(default_response=[])
@@ -29,21 +31,30 @@ class LoggingConnector(GoogleCloudConnector):
         entries = response.get("entries", [])
         return entries
 
-    def get_last_log_entry_timestamp(self, project_id: str, service_account_email: str, service_account_key_name: str=None):
-        log_entries = (self._list_entries_service_accounts(project_id, service_account_email, service_account_key_name))
+    def get_last_log_entry_timestamp(
+        self,
+        project_id: str,
+        service_account_email: str,
+        service_account_key_name: str = None,
+    ):
+        log_entries = self._list_entries_service_accounts(
+            project_id, service_account_email, service_account_key_name
+        )
         if not log_entries:
             return None
         timestamp = log_entries[0].get("timestamp")
         return timestamp
 
     @api_retry_handler(default_response=[])
-    def _list_entries_service_accounts(self, project_id: str, service_account_email: str, service_account_key_name) -> list:
+    def _list_entries_service_accounts(
+        self, project_id: str, service_account_email: str, service_account_key_name
+    ) -> list:
         filter_str = (
-            f"protoPayload.authenticationInfo.principalEmail=\"{service_account_email}\""
+            f'protoPayload.authenticationInfo.principalEmail="{service_account_email}"'
         )
         if service_account_key_name:
-            full_name = f"//iam.googleapis.com/{service_account_key_name}"
-            filter_str += f" AND protoPayload.authenticationInfo.serviceAccountKeyName=\"{full_name}\""
+            resource_name = f"//iam.googleapis.com/{service_account_key_name}"
+            filter_str += f' AND protoPayload.authenticationInfo.serviceAccountKeyName="{resource_name}"'
         filter_str += self._get_timestamp_filter_str(datetime.utcnow())
 
         body = {
@@ -66,7 +77,10 @@ class LoggingConnector(GoogleCloudConnector):
         else:
             log_search_period_in_days = 365
 
-        start_time, end_time = time_now - timedelta(days=log_search_period_in_days), time_now
+        start_time, end_time = (
+            time_now - timedelta(days=log_search_period_in_days),
+            time_now,
+        )
         start_time_str, end_time_str = (
             start_time.isoformat().split(".")[0] + "Z",
             end_time.isoformat().split(".")[0] + "Z",

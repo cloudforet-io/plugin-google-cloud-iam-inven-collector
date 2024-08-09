@@ -31,10 +31,14 @@ class ServiceAccountManager(ResourceManager):
             "PROJECT": {},
         }
 
-    def collect_cloud_services(self, options: dict, secret_data: dict, schema: str) -> Generator[dict, None, None]:
+    def collect_cloud_services(
+        self, options: dict, secret_data: dict, schema: str
+    ) -> Generator[dict, None, None]:
         self.iam_connector = IAMConnector(options, secret_data, schema)
         self.rm_v3_connector = ResourceManagerV3Connector(options, secret_data, schema)
-        self.logging_connector = LoggingConnector(options=options, secret_data=secret_data, schema=schema)
+        self.logging_connector = LoggingConnector(
+            options=options, secret_data=secret_data, schema=schema
+        )
 
         # Get all projects
         projects = self.rm_v3_connector.list_all_projects()
@@ -62,8 +66,14 @@ class ServiceAccountManager(ResourceManager):
             service_account["status"] = "DISABLED"
         else:
             service_account["status"] = "ENABLED"
-        service_account["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email)
-        service_account["lastActivityDescription"] = f"Activity log found in the last {self.logging_connector.log_search_period}" if service_account["lastActivityTime"] else f"No activity log found in the last {self.logging_connector.log_search_period}"
+        service_account["lastActivityTime"] = (
+            self.logging_connector.get_last_log_entry_timestamp(project_id, email)
+        )
+        service_account["lastActivityDescription"] = (
+            f"Activity log found in the past {self.logging_connector.log_search_period.lower()}"
+            if service_account["lastActivityTime"]
+            else f"No activity log found in the past {self.logging_connector.log_search_period.lower()}"
+        )
         keys = self.get_service_account_keys(email, project_id)
         service_account["keys"] = keys
         service_account["keyCount"] = len(keys)
@@ -79,7 +89,7 @@ class ServiceAccountManager(ResourceManager):
             reference={
                 "resource_id": resource_id,
                 "external_link": f"https://console.cloud.google.com/iam-admin/serviceaccounts/details/{unique_id}?"
-                                 f"project={project_id}"
+                f"project={project_id}",
             },
             # data_format="grpc",
         )
@@ -90,8 +100,16 @@ class ServiceAccountManager(ResourceManager):
             key_full_name = key.get("name")
             key["name"] = key_full_name.split("/")[-1]
             key["status"] = "ACTIVE"
-            key["lastActivityTime"] = self.logging_connector.get_last_log_entry_timestamp(project_id, email, key_full_name)
-            key["lastActivityDescription"] = f"Activity log found in the last {self.logging_connector.log_search_period}" if key["lastActivityTime"] else f"No activity log found in the last {self.logging_connector.log_search_period}"
+            key["lastActivityTime"] = (
+                self.logging_connector.get_last_log_entry_timestamp(
+                    project_id, email, key_full_name
+                )
+            )
+            key["lastActivityDescription"] = (
+                f"Activity log found in the past {self.logging_connector.log_search_period.lower()}"
+                if key["lastActivityTime"]
+                else f"No activity log found in the past {self.logging_connector.log_search_period.lower()}"
+            )
 
             creation_time = key.get("validAfterTime")
             expiration_time = key.get("validBeforeTime")
