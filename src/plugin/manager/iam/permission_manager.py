@@ -29,6 +29,11 @@ class PermissionManager(ResourceManager):
             "FOLDER": {},
             "PROJECT": {},
         }
+        self.role_id_to_info = {
+            "organization_roles": {},
+            "project_roles": {},
+            "predefined_roles": {},
+        }
 
     def collect_cloud_services(
         self, options: dict, secret_data: dict, schema: str
@@ -43,6 +48,11 @@ class PermissionManager(ResourceManager):
         organizations = self.rm_v3_connector.search_organizations()
         for organization in organizations:
             self.collect_organization_permissions(organization)
+            roles = self.iam_connector.list_organization_roles(organization["name"])
+            role_id_to_info = {
+                role_id: role_info for role_id, role_info in roles.items()
+            }
+            self.role_id_to_info["organization_roles"].update(role_id_to_info)
 
         # Get folder permissions
         folders = self.rm_v3_connector.search_folders()
@@ -53,6 +63,16 @@ class PermissionManager(ResourceManager):
         projects = self.rm_v3_connector.list_all_projects()
         for project in projects:
             self.collect_project_permissions(project)
+            roles = self.iam_connector.list_project_roles(project["projectId"])
+            role_id_to_info = {
+                role_id: role_info for role_id, role_info in roles.items()
+            }
+            self.role_id_to_info["project_roles"].update(role_id_to_info)
+
+        # Get all roles
+        roles = self.iam_connector.list_roles()
+        role_id_to_info = {role_id: role_info for role_id, role_info in roles.items()}
+        self.role_id_to_info["predefined_roles"] = role_id_to_info
 
         yield from self.make_permission_info()
 
@@ -130,13 +150,13 @@ class PermissionManager(ResourceManager):
         role_id = binding.get("role")
 
         if role_id.startswith("organizations/"):
-            role_details = self.iam_connector.get_organization_role(role_id)
+            role_details = self.role_id_to_info["organization_roles"].get(role_id)
             role_type = "CUSTOM"
         elif role_id.startswith("projects/"):
-            role_details = self.iam_connector.get_project_role(role_id)
+            role_details = self.role_id_to_info["project_roles"].get(role_id)
             role_type = "CUSTOM"
         else:
-            role_details = self.iam_connector.get_role(role_id)
+            role_details = self.role_id_to_info["predefined_roles"].get(role_id)
             role_type = "PREDEFINED"
 
         binding_info["role"] = {

@@ -78,17 +78,12 @@ class RoleManager(ResourceManager):
             role["status"] = "ENABLED"
 
         # Get role details
-        if role_type == "PROJECT":
-            role_details = self.iam_connector.get_project_role(role_id)
-            role["roleType"] = "CUSTOM"
-        elif role_type == "ORGANIZATION":
-            role_details = self.iam_connector.get_organization_role(role_id)
+        if role_type == "PROJECT" or role_type == "ORGANIZATION":
             role["roleType"] = "CUSTOM"
         else:
-            role_details = self.iam_connector.get_role(role_id)
             role["roleType"] = role_type
 
-        role["includedPermissions"] = role_details.get("includedPermissions", [])
+        role["includedPermissions"] = role.get("includedPermissions", [])
         role["permissionCount"] = len(role["includedPermissions"])
 
         return make_cloud_service(
