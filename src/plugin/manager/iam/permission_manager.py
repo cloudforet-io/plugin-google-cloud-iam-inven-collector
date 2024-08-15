@@ -67,14 +67,9 @@ class PermissionManager(ResourceManager):
                     project["projectId"]
                 )
 
-        pre_role_id_to_info = {role.get("name"): role for role in predefined_roles}
-        self.role_id_to_info["predefined_roles"] = pre_role_id_to_info
-
-        org_role_id_to_info = {role.get("name"): role for role in organization_roles}
-        self.role_id_to_info["organization_roles"] = org_role_id_to_info
-
-        pro_role_id_to_info = {role.get("name"): role for role in project_roles}
-        self.role_id_to_info["project_roles"] = pro_role_id_to_info
+        self.role_id_to_info["predefined_roles"] = {role.get("name"): role for role in predefined_roles}
+        self.role_id_to_info["organization_roles"] = {role.get("name"): role for role in organization_roles}
+        self.role_id_to_info["project_roles"] = {role.get("name"): role for role in project_roles}
 
         # Get service account info
         self.get_service_account_info()
@@ -175,6 +170,9 @@ class PermissionManager(ResourceManager):
         else:
             role_details = self.role_id_to_info["predefined_roles"].get(role_id)
             role_type = "PREDEFINED"
+            if not role_details:
+                role_details = self.iam_connector.get_role(role_id)
+                self.role_id_to_info["predefined_roles"][role_id] = role_details
 
         binding_info["role"] = {
             "id": role_details.get("name"),

@@ -119,7 +119,6 @@ class IAMConnector(GoogleCloudConnector):
     def list_roles(self):
         roles = []
         request = self.client.roles().list(pageSize=1000, view="FULL")
-
         while True:
             response = request.execute()
             roles.extend(response.get("roles", []))
@@ -132,3 +131,8 @@ class IAMConnector(GoogleCloudConnector):
                 break
 
         return roles
+
+    @api_retry_handler(default_response={})
+    @cache.cacheable(key="plugin:connector:role:{name}", alias="local")
+    def get_role(self, name: str):
+        return self.client.roles().get(name=name).execute()

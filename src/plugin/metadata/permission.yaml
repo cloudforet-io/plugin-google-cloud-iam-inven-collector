@@ -41,6 +41,11 @@ search:
           label: Project
 
 table:
+  options:
+    default_filter:
+      - key: data.memberType
+        value: googleManagedServiceAccount
+        operator: not
   sort:
     key: data.memberType
   fields:
