@@ -45,27 +45,17 @@ class PermissionManager(ResourceManager):
         folders = self.rm_v3_connector.search_folders()
         projects = self.rm_v3_connector.list_all_projects()
 
-        if ResourceManager.common_data.get("are_roles_synced"):
-            predefined_roles = ResourceManager.common_data["role_lists"][
-                "predefined_roles"
-            ]
-            organization_roles = ResourceManager.common_data["role_lists"][
-                "organization_roles"
-            ]
-            project_roles = ResourceManager.common_data["role_lists"]["project_roles"]
-
-        else:
-            predefined_roles = self.iam_connector.list_roles()
-            organization_roles = []
-            for organization in organizations:
-                organization_roles = self.iam_connector.list_organization_roles(
-                    organization["name"]
-                )
-            project_roles = []
-            for project in projects:
-                project_roles = self.iam_connector.list_project_roles(
-                    project["projectId"]
-                )
+        predefined_roles = self.iam_connector.list_roles()
+        organization_roles = []
+        for organization in organizations:
+            organization_roles = self.iam_connector.list_organization_roles(
+                organization["name"]
+            )
+        project_roles = []
+        for project in projects:
+            project_roles = self.iam_connector.list_project_roles(
+                project["projectId"]
+            )
 
         self.role_id_to_info["predefined_roles"] = {role.get("name"): role for role in predefined_roles}
         self.role_id_to_info["organization_roles"] = {role.get("name"): role for role in organization_roles}
