@@ -48,14 +48,14 @@ class PermissionManager(ResourceManager):
         predefined_roles = self.iam_connector.list_roles()
         organization_roles = []
         for organization in organizations:
-            organization_roles = self.iam_connector.list_organization_roles(
+            organization_roles.extend(self.iam_connector.list_organization_roles(
                 organization["name"]
-            )
+            ))
         project_roles = []
         for project in projects:
-            project_roles = self.iam_connector.list_project_roles(
+            project_roles.extend(self.iam_connector.list_project_roles(
                 project["projectId"]
-            )
+            ))
 
         self.role_id_to_info["predefined_roles"] = {role.get("name"): role for role in predefined_roles}
         self.role_id_to_info["organization_roles"] = {role.get("name"): role for role in organization_roles}
