@@ -1,2 +1,3 @@
 spaceone-api
 google-api-python-client
+PySocks # for proxy support
