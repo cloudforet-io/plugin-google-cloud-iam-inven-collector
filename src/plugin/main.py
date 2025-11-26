@@ -1,9 +1,11 @@
 import logging
+import os
 import time
 from typing import Generator
 
 from spaceone.core.error import ERROR_REQUIRED_PARAMETER
 from spaceone.inventory.plugin.collector.lib.server import CollectorPluginServer
+
 from .manager.base import ResourceManager
 
 app = CollectorPluginServer()
@@ -24,6 +26,12 @@ def collector_collect(params: dict) -> Generator[dict, None, None]:
     project_id = secret_data.get("project_id")
 
     _check_secret_data(secret_data)
+
+    proxy_env = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+    if proxy_env:
+        _LOGGER.debug(
+            f"** Using proxy in environment variable HTTPS_PROXY/https_proxy: {proxy_env}"
+        )  # src/plugin/connector/__init__.py _create_http_client
 
     start_time = time.time()
     _LOGGER.debug(
